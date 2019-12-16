@@ -1,0 +1,1410 @@
+<apex:page controller="InvoiceComplianceController" showHeader="false" sidebar="false" lightningStylesheets="true" docType="html-5.0">
+    <apex:slds />
+    <apex:pageMessages id="showmsg"></apex:pageMessages>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th{
+            background-color: #dddddd;
+        }
+        td, th {
+            text-align: left;
+            padding: 8px
+        }
+        tr {
+            background-color:white;
+        }
+        input{
+            width: 150px;
+        }
+        .slds-scope .slds-popover__body, .slds-scope .slds-popover__header, .slds-scope .slds-popover__footer {
+            position: relative;
+            padding: .5rem .75rem;
+            word-wrap: break-word;
+            
+            white-space: normal;
+            min-width: 300px;
+        }
+        .readOnlyPro{
+            cursor: not-allowed;
+        }
+        .fontSize{
+            font-size: 14px;
+        }
+        .border_none{
+            border:0px !important;
+        }
+        .border_none::selection {
+            background: transparent !important;
+        }
+    </style>
+    <apex:form id="frmid">
+    <apex:actionFunction action="{!saveInvoiceCompliance}" name="Save"/>
+        <div style="border: solid 0.5px" >
+            <div class="slds-grid slds-gutters" style="margin-top:7px; margin-bottom:10px; margin-left:10px">
+                <div class="slds-text-heading_large" >
+                    <span class="slds-icon_container slds-icon-custom-custom39" title="Description of icon when needed">
+                        <svg class="slds-icon" aria-hidden="true">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/custom-sprite/svg/symbols.svg#custom77')}"></use>
+                        </svg>
+                    </span>
+                    <Strong>Invoice Volume</Strong>                    
+                </div>
+               <apex:commandButton value="Save & Close" style="margin-left:28%;height: 35px;margin-top: 7px;" styleclass="slds-button slds-button_brand SaveBtn" onclick="saveAndClose(this); return false;"  disabled="false"/> 
+            </div>
+            <div>
+                <span class="spanID1" style="display:none; margin-left:100px; margin-top:5px; color:red;">
+                    <div class="slds-notify_container slds-is-relative">
+                        <div class="slds-notify slds-notify_toast slds-theme_error" role="alert">
+                            <span class="slds-assistive-text">info</span>
+                            <span class="slds-icon_container slds-icon-utility-info slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                                <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error" />
+                                </svg>
+                            </span>
+                            <div class="slds-notify__content">
+                                <h2 id="errorHeading" class="slds-text-heading_small"></h2>
+                            </div>
+                        </div>
+                    </div>
+                </span>
+                
+                <!-- new percent notification  -->
+                <span class="percentNotification" style="display:none;height:8rem;width:25rem;margin-left:37%; margin-top:5px;">
+                    <div class="slds-notify slds-notify_toast slds-theme_info" role="status">
+                        <div class="slds-notify__content">
+                            <h2 id="notificationHeading" class="slds-text-hewading_small"></h2>
+                        </div>
+                        <div class="slds-notify__close">
+                            <button class="slds-button slds-button_icon slds-button_icon-inverse" title="Close" onclick="hideNotification('percent');return false;">
+                                <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}" />
+                                </svg>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </div>
+                    </div>
+                </span>
+                
+                <!-- new  uplift notification-->
+                <span class="upliftNotification" style="display:none;height:8rem;width:25rem;margin-left:37%; margin-top:5px;">
+                    <div class="slds-notify slds-notify_toast slds-theme_info" role="status">
+                        <div class="slds-notify__content">
+                            <h2 id="upliftNotificationHeading" class="slds-text-hewading_small"></h2>
+                        </div>
+                        <div class="slds-notify__close">
+                            <button class="slds-button slds-button_icon slds-button_icon-inverse" title="Close" onclick="hideNotification('uplift');return false;">
+                                <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}" />
+                                </svg>
+                                <span class="slds-assistive-text">Close</span>
+                            </button>
+                        </div>
+                    </div>
+                </span>
+                
+                <!-- new  -->
+                <span class="invoiceNotification" style="display:none;height:8rem;width:25rem;margin-left:37%; margin-top:5px;">
+                       <div class="slds-notify slds-notify_toast slds-theme_info" role="status">
+                           <div class="slds-notify__content">
+                               <h2 id="invoiceNotificationHeading" class="slds-text-hewading_small"></h2>
+                           </div>
+                        <div class="slds-notify__close">
+                            <button class="slds-button slds-button_icon slds-button_icon-inverse" title="Close" onclick="hideNotification('invoice');return false;">
+                              <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}" />
+                              </svg>
+                              <span class="slds-assistive-text">Close</span>
+                            </button>
+                          </div>
+                       </div>
+                </span>
+                
+            </div> 
+            <apex:outputText rendered="{!sizeOfmapOfWrapperForPay > 0}">           
+                <div style="margin-bottom:50px;">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_bordered slds-no-row-hover" style="">
+                        <tr class="slds-line-height_reset">
+                            <th style="width:18%;font-size:18px"><strong>Pay Information</strong></th>
+                            <th>
+                            </th> 
+                            <apex:repeat value="{!invoiceNumberWithvalues}" var="yearVar">
+                                <th >{!yearVar.year}</th>
+                            </apex:repeat>
+                            <th>
+                                Average Value
+                            </th>
+                            <th>
+                                Deviation from List Price
+                            </th>
+                            <th>
+                                <div  style="float: right;">
+                                    <button class="slds-button slds-button_icon slds-button_icon-inverse" title="Product Configuration Screen" onclick="redirect(); return false;">
+                                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#custom_apps')}" />
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    
+                                    <apex:commandButton value="Calculate" styleclass="slds-button slds-button_brand calBtn" onclick="calculateDiscountAndTotal(); return false;" rerender="frmid"/>
+                                </div>
+                            </th>
+                        </tr> 
+                        <tr>
+                            <td>Total Invoice Volume
+                                <span class="slds-icon_container slds-icon-utility-info"  onmouseover="showMessage();" onmouseout="hideMessage();">
+                                    <svg class="slds-icon slds-icon slds-icon_xx-small slds-icon-text-default" aria-hidden="true">
+                                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#info')}"></use>
+                                    </svg>
+                                </span>
+                                
+                                <div class="slds-popover slds-popover_tooltip slds-nubbin_bottom-left productDiv" role="tooltip" id="help" style="position:absolute;top:-66px;left:155px;word-wrap:break-word; display: none;">
+                                    <div class="slds-popover__body productDivMessage">
+                                                                   
+                                    </div>
+                                </div>  
+                            </td>
+                            <td>
+                            </td>
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td id="id">
+                                    <!--  for the Invoice Amount -->
+                                    <apex:input styleclass="slds-input payInvoice fontSize" value="{!mapOfWrapperForPay[yearVar].invoice}" style="max-width:120px; border: 1px solid #ccc; padding-left : 5px;  font-size:14px;" onchange="errorCheck(this); updateCompliance();"/>
+                                </td>
+                            </apex:repeat>
+                            <td id="id">
+                                <!--  for the Avg. invoice -->
+                                <input class="slds-input avgInvoice readOnlyPro fontSize" style="max-width:120px; border: 1px solid #ccc; padding-left : 5px; background:rgb(236, 235, 234); font-size:14px;" readonly="true" />
+                                
+                            </td>
+                            <td>
+                            </td>
+                            
+                        </tr>
+                        <tr>  
+                            <td>List Unit Price</td>
+                            <td>
+                            </td> 
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td id="id">
+                                    <!--  for the list price -->
+                                    <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                        <output style="font-size:15px; "><strong>{!currencySymbol} </strong></output>
+                                        <apex:input styleclass="slds-input basePrice readOnlyPro" value="{!mapOfWrapperForPay[yearVar].basePrice}" style="max-width:120px; padding-left : 5px;margin-left:-9px; box-shadow: none;" html-readonly="true" />                                  
+                                    </div>
+                                </td> 
+                            </apex:repeat> 
+                            <td id="id">
+                                <!--  for the Avg. list price -->
+                                <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                    <output class="readOnlyPro" style="font-size:15px"> <strong>{!currencySymbol} </strong></output>
+                                    <input class="slds-input avgbasePrice readOnlyPro" value="0" style="max-width:120px; padding-left : 5px;margin-left: -9px;box-shadow: none;" readonly="true" id="avglist"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr> 
+                        <tr style="display:none">
+                            <td>List Price</td>
+                            <td>
+                            </td>
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td id="id">
+                                    <!--  for the list price -->
+                                    <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                        <output style="font-size:15px; "><strong>{!currencySymbol} </strong></output>
+                                        <apex:input styleclass="slds-input listPrice readOnlyPro" value="{!mapOfWrapperForPay[yearVar].listPrice}" style="max-width:120px; padding-left:5px; margin-left:-9px; box-shadow: none;" html-readonly="true" id="inputListPrice"/>                                  
+                                    </div>
+                                </td> 
+                            </apex:repeat> 
+                            <td id="id">
+                                <!--  for the Avg. list price -->
+                                <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                    <output class="readOnlyPro" style="font-size:15px; "> <strong>{!currencySymbol} </strong></output>
+                                    <input class="slds-input avgListPrice readOnlyPro" value="0" style="max-width:120px; padding-left : 5px;margin-left: -9px;box-shadow: none;" readonly="true" id="avglist"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                        <tr style="display:none">
+                            <td>SBQQ__ProrateMultiplier__c</td>
+                            <td>
+                            </td>
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td id="id">
+                                    <!--  for the list price -->
+                                    <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                        
+                                        <apex:input styleclass="slds-input prorateddMultiplier readOnlyPro" value="{!mapOfWrapperForPay[yearVar].proratedMultiplier}" style="max-width:120px; padding-left:5px; margin-left:-9px; box-shadow: none;" html-readonly="true" id="inputListPrice"/>                                  
+                                    </div>
+                                </td> 
+                            </apex:repeat> 
+                            <td id="id">
+                                <!--  for the Avg. list price -->
+                                <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                    
+                                    <input class="slds-input avgProratedMultiplier readOnlyPro" value="0" style="max-width:120px; padding-left : 5px;margin-left: -9px;box-shadow: none;" readonly="true" id="avglist"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Net Unit Price</td>
+                            <td>
+                            </td>
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td id="id">
+                                    <!--  for the list price -->
+                                    <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                        <output style="font-size:15px; "><strong>{!currencySymbol} </strong></output>
+                                        <apex:input styleclass="slds-input netPrice readOnlyPro" value="{!mapOfWrapperForPay[yearVar]. netUnitPrice}" style="max-width:120px; padding-left:5px; margin-left:-9px; box-shadow: none;" html-readonly="true" id="inputListPrice"/>                                  
+                                    </div>
+                                </td> 
+                            </apex:repeat> 
+                            <td id="id">
+                                <!--  for the Avg. list price -->
+                                <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                    <output class="readOnlyPro" style="font-size:15px; "> <strong>{!currencySymbol} </strong></output>
+                                    <input class="slds-input avgNetPrice readOnlyPro" value="0" style="max-width:120px; padding-left : 5px;margin-left: -9px;box-shadow: none;" readonly="true" id="avglist"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Uplift</td>
+                            <td>
+                                <select name="percentType" style="max-width: 80px; height:32px" class="slds-select percentOrAmtUplift" onchange="changeSymbol('avgUpliftSymbol', 'percentOrAmtUplift')">
+                                    <option value="%" >%</option>
+                                    <option value="amt" >{!currenyISO}</option>
+                                </select>
+                                <apex:inputhidden value="{!upliftIdentify}" id="hiddenupliftIdentifier"/>
+                            </td>
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td>
+                                    <!--  for the Additional Discount -->
+                                    <apex:input styleclass="slds-input uplift" value="{!mapOfWrapperForPay[yearVar].uplift}" style="max-width:120px; border: 1px solid #ccc; padding-left : 5px;  font-size:14px;" onchange="errorDecimalCheck(this); calculateUpliftPrice();"/>
+                                    <apex:input styleclass="slds-input upliftAmount" value="{!mapOfWrapperForPay[yearVar].upliftAmount}" style="max-width:120px; border: 1px solid #ccc; padding-left:5px;display:none;" onchange="errorDecimalCheck(this);"/>
+                                    
+                                </td>
+                            </apex:repeat>
+                            <td >
+                                <!--  for the Avg. uplift -->
+                             	<div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom avgUpliftSymbol" style="max-width:120px; background:rgb(236, 235, 234);">
+                                    <output class="readOnlyPro" style="font-size:15px;display:none"> <strong>{!currencySymbol} </strong></output>
+                                 	<apex:outputText value="{!avgUplift}" styleClass="slds-input avgUpliftPercent readOnlyPro" id="avgUpliftOutput" style="max-width:120px; border: 0px solid #ccc; padding-left : 2px; background:rgb(236, 235, 234); margin-left: -4px;font-size: 14px;" /> 
+                                	<output style="font-size:13px; margin-left: -25px;display:none"> <strong>% </strong></output>
+                                </div>
+                            </td>
+                            <td>
+                                
+                            </td>
+                        </tr> 
+                        <tr>
+                            <td>Additional Discount</td>
+                            <td>
+                                <select name="percentType" style="max-width: 80px; height:32px" class="slds-select percentOrAmt" onchange="changeSymbol('avgDiscountSymbol', 'percentOrAmt');">
+                                    <option value="%" >%</option> 
+                                    <option value="amt" >{!currenyISO}</option>
+                                </select>
+                                <apex:inputhidden value="{!discountIdentify}" id="hiddenDiscountIdentifier"/> 
+                            </td>
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td id="id">
+                                    <!--  for the Additional Discount -->
+                                    <apex:input styleclass="slds-input AddDiscount" value="{!mapOfWrapperForPay[yearVar].addDiscount}" style="max-width:120px; border: 1px solid #ccc; padding-left : 5px;  font-size:14px;" onchange="errorDecimalCheck(this); commaInAddDiscount(this)"/>
+                                </td>
+                            </apex:repeat>
+                            <td id="id">
+                                <!--  for the Avg. add. discount -->
+                                <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom avgDiscountSymbol" style="max-width:120px; background:rgb(236, 235, 234);">
+                                    <output class="readOnlyPro" style="font-size:15px;display:none"> <strong>{!currencySymbol} </strong></output>
+                                 	<apex:outputText styleClass="slds-input avgAdditionalDiscount readOnlyPro" style="max-width:120px; border: 0px solid #ccc;  padding-left : 2px; background:rgb(236, 235, 234); margin-left: -4px;font-size: 14px" value="{!avgPayDiscount}" id="outtext" />
+                                	<output style="font-size:13px; margin-left: -25px;display:none"> <strong>% </strong></output>
+                                	<apex:inputhidden value="{!avgPayDiscount}" id="hiddenAvgDiscount"/>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                        </tr> 
+                        <tr>
+                            <td>Net Total</td>
+                            <td>
+                            </td>
+                            <apex:repeat value="{!mapOfWrapperForPay}" var="yearVar">
+                                <td id="id">
+                                    <!--  for the Net Total -->
+                                    <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                        <output style="font-size:15px; cursor:not-allowed;"> <strong>{!currencySymbol} </strong></output>
+                                        <apex:input styleClass="slds-input netTotal readOnlyPro" value="{!mapOfWrapperForPay[yearVar].netTotal}" style="max-width:120px; padding-left : 5px;margin-left:-9px;box-shadow: none;" html-readonly="true" />
+                                    </div>
+                                </td>
+                            </apex:repeat>
+                            <td id="id">
+                                <!--  for the Avg. net total -->
+                                <div class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom" style="max-width:120px; background:rgb(236, 235, 234);">
+                                    <output style="font-size:15px; cursor:not-allowed;"> <strong>{!currencySymbol} </strong></output>
+                                    <input class="slds-input avgNetTotal readOnlyPro" value="0" style="max-width:120px; padding-left : 5px;margin-left: -9px;box-shadow: none;" readonly="true" id="avgNetTotal"/>
+                                </div>
+                            </td>
+                            <td>
+                            	<apex:input styleclass="slds-input avgUpliftDiscount readOnlyPro" value="{!avgUpliftDisount}" style="max-width:120px; border: 1px solid #ccc; padding-left:5px; background:rgb(236, 235, 234);"  html-readonly="true" />
+                              	<output style="font-size:13px; margin-left: -25px;"> <strong>% </strong></output>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputText>
+            <apex:outputText rendered="{!yearsInvoiceValue1.size > 0}">
+                <div style="margin-top:10px; margin-bottom:15px">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_bordered slds-no-row-hover" style="">
+                        <tr class="slds-line-height_reset">
+                            <th style="width:18%; font-size:18px"><strong>Scanning Information</strong></th> 
+                            <apex:repeat value="{!invoiceNumberWithvalues}" var="yearVar">
+                                <th >{!yearVar.year}</th>
+                            </apex:repeat>
+                        </tr> 
+                        <tr>
+                            <td>Scanning Invoice Volume</td>
+                            <apex:repeat value="{!yearsInvoiceValue1}" var="yearInvoice">
+                                <td id="id">
+                                    <!--  for the Invoice Amount -->
+                                    <apex:input styleClass="slds-input scanInvoice"  value="{!yearInvoice.invoiceQuantity}" style="max-width:120px; border: 1px solid #ccc; padding-left : 5px;" onchange="errorCheck(this);"/>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                        <tr>
+                            <td>Per Invoice Cost to Customer</td>
+                            <apex:repeat value="{!yearsInvoiceValue1}" var="yearInvoice">
+                                <td id="id">
+                                    <!--  for the Per Invoice Cost to Customer" -->
+                                    <div style="max-width:120px;" class=" slds-input slds-border_right slds-border_top slds-border_left slds-border_bottom">
+                                        <output style="font-size:15px"> <strong>{!currencySymbol} </strong></output>
+                                        <apex:input styleClass="slds-input border_none"  html-autocomplete="off" value="{!yearInvoice.customerCost}" style="max-width:120px; border:0px; padding-left:5px;  margin-left: -8px;background: bottom;font-size: 14px;width: 100px;box-shadow: none;" onchange="errorDecimalCheck(this);" />
+                                    </div>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputText>
+            <apex:outputText rendered="{!sizeOfmapOfCompTypeWithalue > 0}">
+            <div>
+            	<span class="spanIDfor" style="display:none; margin-left:100px; margin-top:5px; color:red;">
+                    <div class="slds-notify_container slds-is-relative">
+                        <div class="slds-notify slds-notify_toast slds-theme_error" role="alert">
+                            <span class="slds-assistive-text">info</span>
+                            <span class="slds-icon_container slds-icon-utility-info slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                                <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error" />
+                                </svg>
+                            </span>
+                            <div class="slds-notify__content">
+                                <h2 id="errorHeadingfor" class="slds-text-heading_small"></h2>
+                            </div>
+                        </div>
+                    </div>
+                </span>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_bordered slds-no-row-hover" style="">
+                    <tr class="slds-line-height_reset">
+                        <th style="width:18%;font-size:18px;"><strong>Compliance Type</strong></th> 
+                        <apex:repeat value="{!invoiceNumberWithvalues}" var="yearVar">
+                            <th>{!yearVar.year}</th>
+                        </apex:repeat>
+                    </tr>
+                    
+                    <apex:repeat value="{!mapWithCompTypeWithWrapper}" var="compType">
+                        <tr>
+                            <td>{!compType}</td>
+                        <apex:repeat value="{!mapWithCompTypeWithWrapper[compType]}" var="yearPercent">
+                            <td id="id"> 
+                                <apex:input style="max-width:120px;" value="{!yearPercent.yearlyInvoicePercnt}" id="theTextInput" styleClass="slds-input invoicePercnt" onchange="percnt(this.value);"/>
+                                <output style="font-size:13px; margin-left: -25px;"> <strong>% </strong></output>
+                               <!-- <apex:input value="{!yearPercent.yearlyInvoicePercnt}" id="theTextInput" style="max-width:150px;" styleClass="slds-input invoicePercnt"/>% -->
+                            </td>
+                        </apex:repeat>
+                    </tr>
+                </apex:repeat>
+                <tr>
+	           		<td style="width:18%;"><strong>Total Invoice Percent</strong></td> 
+                   	<apex:repeat value="{!invoiceNumberWithvalues}" var="yearVar">
+                    	<td>
+                    		<input style="max-width:120px; background:rgb(236, 235, 234);padding-left: 10px" class="slds-input totalcompliancePrcnt readOnlyPro" type="text" value="" readonly="true"/>
+                    		<output style="font-size:13px; margin-left: -25px;"> <strong>% </strong></output>
+                    		<span class="spanTotalErrorPercnt" style="display:none; color:red;max-width: 120px;">
+			                </span>
+                    	</td>
+                   	</apex:repeat>
+                </tr>
+            </table>
+            </div>
+            <div style="Margin-top:30px; margin-botton:30px">
+                <span class="spanID2" style="display:none; margin-left:100px; margin-top:5px; color:red;">
+                    <div class="slds-notify_container slds-is-relative">
+                        <div class="slds-notify slds-notify_toast slds-theme_error" role="alert">
+                            <span class="slds-assistive-text">info</span>
+                            <span class="slds-icon_container slds-icon-utility-info slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                                <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error" />
+                                </svg>
+                            </span>
+                            <div class="slds-notify__content">
+                                <h2 id="errorHeading1" class="slds-text-heading_small"></h2>
+                            </div>
+                        </div>
+                    </div>
+                </span>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_bordered slds-no-row-hover" style="">
+                <tr class="slds-line-height_reset">
+                    <th style="width:18%; font-size:18px"><strong>Number of Invoices</strong></th> 
+                    <apex:repeat value="{!invoiceNumberWithvalues}" var="yearValue">
+                        <th>{!yearValue.year}</th>
+                    </apex:repeat>
+                </tr>
+                <apex:repeat value="{!mapOfCompTypeWithalue}" var="compType">
+                    <tr>
+                        <td>{!compType}</td>
+                        <apex:repeat value="{!mapWithCompTypeWithWrapper[compType]}" var="yearInvoice">
+                            <td >
+                                 <apex:input style="max-width:120px;" value="{!yearInvoice.YearlyInvoiceAmt}" id="theTextInput" styleClass="slds-input invoiceValue" onchange="amount(this);"/>
+                            </td>
+                        </apex:repeat> 
+                    </tr>
+                </apex:repeat>
+                    <tr> 
+                        <td style="width:18%"><strong>Total invoice volume</strong></td>
+                        <apex:repeat value="{!invoiceNumberWithvalues}" var="yearVar">
+                            <td >
+                            	<output style="max-width:120px; background:rgb(236, 235, 234);" class="slds-input totalcompliancePrcntAmt readOnlyPro" type="text" value=""/>
+                            	<span class="spanTotalErrorAmt" style="display:none; color:red;max-width: 120px;">
+			                </span>
+                            </td>
+                        </apex:repeat>
+                    </tr>
+            </table>  
+            </div>
+            <div style="margin-top:30px">
+            </div> 
+            </apex:outputText>
+        </div>
+        <div id="spinner" style="display:none">
+                <div class="demo-only demo--inverse" style="height: 6rem;">
+                    <div class="slds-spinner_container">
+                        <div role="status" class="slds-spinner slds-spinner_medium">
+                            <span class="slds-assistive-text">Loading</span>
+                            <div class="slds-spinner__dot-a"></div>
+                            <div class="slds-spinner__dot-b"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </apex:form>
+    <script type="text/javascript">
+    function percnt(val){
+        
+        if(val.match(/^[+]?\d+$/)){
+            
+            var invoicePercentage = document.getElementsByClassName('invoicePercnt');
+            var invoiceAmount = document.getElementsByClassName('invoiceValue');
+           	var buttonElement = document.getElementsByClassName('SaveBtn');
+            buttonElement[0].disabled = false;
+            for(var i = 0; i< invoicePercentage.length;i++){
+                invoicePercentage[i].disabled = false;
+                invoiceAmount[i].disabled = false;
+                invoicePercentage[i].style.border="thin solid #D3D3D3"
+            }
+            if(val >= 0){
+                var invoiceAmount = document.getElementsByClassName('invoiceValue');
+                var totalcompliancePrcntAmt = document.getElementsByClassName('totalcompliancePrcntAmt');
+                var totalcompliancePrcnt = document.getElementsByClassName('totalcompliancePrcnt');
+                var invoicePerYear = document.getElementsByClassName('payInvoice');
+                var spanError = document.getElementsByClassName('spanIDfor');
+                var buttonElement = document.getElementsByClassName('SaveBtn');
+                buttonElement[0].disabled = false;
+                spanError[0].style.display="none";
+                var spanError2 = document.getElementsByClassName('spanID2');
+                spanError2[0].style.display="none";
+                for(var i = 0; i< invoicePercentage.length;i++ ){
+                    if(val == invoicePercentage[i].value){
+                        var v1 = removeComma(invoicePerYear[i%invoicePerYear.length].value);
+                        invoiceAmount[i].value = Number(invoicePercentage[i].value)*(Number(v1)/100); 
+                        invoiceAmount[i].value = addCommaDecimal(invoiceAmount[i].value);   
+                    }
+                }
+                for(var a=0; a< totalcompliancePrcntAmt.length; a++ ){
+                    totalcompliancePrcntAmt[a].value = 0;
+                }
+                for(var a=0; a< totalcompliancePrcnt.length; a++ ){
+                    totalcompliancePrcnt[a].value = 0;
+                }
+                var invoiceInvoiceAmtDUP = document.getElementsByClassName('invoiceValue');
+                for(var j = 0; j< invoiceInvoiceAmtDUP.length;j++ ){
+                    totalcompliancePrcnt[j%totalcompliancePrcntAmt.length].value = Number(totalcompliancePrcnt[j%totalcompliancePrcntAmt.length].value) + Number(removeComma(invoicePercentage[j].value));
+                    totalcompliancePrcntAmt[j%totalcompliancePrcntAmt.length].value = Number(totalcompliancePrcntAmt[j%totalcompliancePrcntAmt.length].value) + Number(removeComma(invoiceInvoiceAmtDUP[j].value)); 
+                }
+            }
+        }
+        else{
+            var spanError = document.getElementsByClassName('spanIDfor');
+            spanError[0].style.display="Block";
+            var buttonElement = document.getElementsByClassName('SaveBtn');
+            buttonElement[0].disabled = true;
+            document.getElementById("errorHeadingfor").innerHTML = "Enter a Integer value instead of string or character";
+            var invoicePercentage = document.getElementsByClassName('invoicePercnt');
+            for(var i = 0; i< invoicePercentage.length;i++){
+                if(val != invoicePercentage[i].value){
+                    invoicePercentage[i].disabled = true;
+                }
+                else{
+                    invoicePercentage[i].style.border="thin solid RED";
+                }
+            }
+            var invoiceValue = document.getElementsByClassName('invoiceValue'); 
+            for(var i = 0; i< invoiceValue.length;i++){
+            	invoiceValue[i].disabled = true;
+            } 
+        }
+        //totalcompliancePrcnt spanTotalError
+        var totalcompliancePrcntAmt = document.getElementsByClassName('totalcompliancePrcntAmt');
+        var totalcompliancePrcnt = document.getElementsByClassName('totalcompliancePrcnt');
+        var invoicePerYear = document.getElementsByClassName('payInvoice');
+        var spanTotalError = document.getElementsByClassName('spanTotalErrorPercnt');
+        var spanTotalError1 = document.getElementsByClassName('spanTotalErrorAmt');
+       	var buttonElement = document.getElementsByClassName('SaveBtn');
+       	var boolButton = false;
+       	if(!buttonElement[0].disabled){
+       		for(var i = 0; i< invoicePerYear.length;i++){
+        	
+	           	if(Number(removeComma(invoicePerYear[i].value)) < removeComma(totalcompliancePrcntAmt[i].value)){
+	            	totalcompliancePrcntAmt[i].style.border="thin solid RED";
+	            	totalcompliancePrcnt[i].style.border="thin solid RED";
+	            	spanTotalError[i].style.display="Block";
+	            	spanTotalError1[i].style.display="Block";
+	            	buttonElement[0].disabled = true;
+	            	boolButton = true;
+	            	spanTotalError[i].innerHTML ='Error:- Invoice Percent is out of bound.';
+	            	spanTotalError1[i].innerHTML ='Error:- Invoice Volume cannot be more that Yearly Electronic Volume.';
+	            }
+	            else{
+	            	totalcompliancePrcntAmt[i].style.border="thin solid #D3D3D3";
+	            	totalcompliancePrcnt[i].style.border="thin solid #D3D3D3";
+	            	spanTotalError[i].style.display="none";
+	            	spanTotalError1[i].style.display="none";
+	            	buttonElement[0].disabled = boolButton;
+            	}
+      		}	
+       	}
+       var totalcompliancePrcntAmt = document.getElementsByClassName('totalcompliancePrcntAmt');
+       for(var i = 0; i < totalcompliancePrcntAmt.length; i++){
+            totalcompliancePrcntAmt[i].value = addComma(totalcompliancePrcntAmt[i].value);
+       } 
+    }
+   	function amount(inputInvoice){
+        var val = removeComma(inputInvoice.value);
+        console.log('After :: '+ val);
+        
+        if(val.match(/^[+]?\d+$/) || val.match(/^[0-9].*$/)){
+            var invoiceValue = document.getElementsByClassName('invoiceValue');
+            var invoicePercentage = document.getElementsByClassName('invoicePercnt');
+            var spanError = document.getElementsByClassName('spanID2');
+            spanError[0].style.display="none";
+            for(var i = 0; i< invoiceValue.length;i++){
+                invoiceValue[i].disabled = false;
+                invoicePercentage[i].disabled = false;
+                invoiceValue[i].style.border="thin solid #D3D3D3";
+            }
+            if(val >= 0) {
+            
+                var invoicePercentage = document.getElementsByClassName('invoicePercnt');
+                var totalcompliancePrcntAmt = document.getElementsByClassName('totalcompliancePrcntAmt');
+                var totalcompliancePrcnt = document.getElementsByClassName('totalcompliancePrcnt');
+                var invoicePerYear = document.getElementsByClassName('payInvoice');
+                var spanError = document.getElementsByClassName('spanID2');
+                var buttonElement = document.getElementsByClassName('SaveBtn');
+                var invoiceValue = document.getElementsByClassName('invoiceValue');
+                spanError[0].style.display="none";
+                buttonElement[0].disabled = false;
+                var spanError1 = document.getElementsByClassName('spanID1');
+                spanError1[0].style.display="none";
+                for(var i = 0;i < invoiceValue.length; i++){ 
+                    
+                    if( val >= 0){
+                        var v1 = removeComma(invoicePerYear[i%invoicePerYear.length].value);
+                        if(isNaN(Math.round((Number(removeComma(invoiceValue[i].value)) * 100)/Number(v1)))){
+                            invoicePercentage[i].value = 0;
+                        }
+                        else
+                            invoicePercentage[i].value = Math.round((Number(removeComma(invoiceValue[i].value)) * 100)/Number(v1));
+                        
+                    }
+                    else if(val == null || val == NaN){
+                        invoicePercentage[i].value = 0;
+                    }  
+                }
+                for(var a=0; a< totalcompliancePrcntAmt.length; a++ ){
+                    totalcompliancePrcntAmt[a].value = 0;
+                }
+                for(var a=0; a< totalcompliancePrcnt.length; a++ ){
+                    totalcompliancePrcnt[a].value = 0;
+                }
+                var invoiceInvoiceAmtDUP = document.getElementsByClassName('invoiceValue');
+                for(var j = 0; j< invoiceInvoiceAmtDUP.length;j++ ){
+	                totalcompliancePrcnt[j%totalcompliancePrcntAmt.length].value = Number(totalcompliancePrcnt[j%totalcompliancePrcntAmt.length].value) + Number(removeComma(invoicePercentage[j].value));
+                    //totalcompliancePrcntAmt[j%totalcompliancePrcntAmt.length].value = Math.round(Number(totalcompliancePrcntAmt[j%totalcompliancePrcntAmt.length].value) + Number(removeComma(invoiceInvoiceAmtDUP[j].value))); 
+                    totalcompliancePrcntAmt[j%totalcompliancePrcntAmt.length].value = (Number(totalcompliancePrcntAmt[j%totalcompliancePrcntAmt.length].value) + Number(removeComma(invoiceInvoiceAmtDUP[j].value))).toFixed(2); 
+                    console.log(totalcompliancePrcntAmt[j%totalcompliancePrcntAmt.length].value);
+                }
+                
+            }
+        }
+        else{
+            var spanError = document.getElementsByClassName('spanID2');
+            spanError[0].style.display="Block";
+            var buttonElement = document.getElementsByClassName('SaveBtn');
+            buttonElement[0].disabled = true;
+            document.getElementById("errorHeading1").innerHTML = "Enter a Integer value instead of string or character";
+            var invoiceValue = document.getElementsByClassName('invoiceValue');
+            for(var i = 0; i< invoiceValue.length;i++){
+                if(val != invoiceValue[i].value){
+                    invoiceValue[i].disabled = true;
+                }
+                else{
+                    invoiceValue[i].style.border="thin solid RED";
+                }
+            }
+            var invoicePercentage = document.getElementsByClassName('invoicePercnt');
+            for(var i = 0; i< invoicePercentage.length;i++){
+            	invoicePercentage[i].disabled = true;
+            } 
+        }
+        var totalcompliancePrcntAmt = document.getElementsByClassName('totalcompliancePrcntAmt');
+        var totalcompliancePrcnt = document.getElementsByClassName('totalcompliancePrcnt');
+        var invoicePerYear = document.getElementsByClassName('payInvoice');
+        var spanTotalError = document.getElementsByClassName('spanTotalErrorPercnt');
+        var spanTotalError1 = document.getElementsByClassName('spanTotalErrorAmt');
+       	var buttonElement = document.getElementsByClassName('SaveBtn');
+       	var boolButton = false;
+       	if(!buttonElement[0].disabled){
+       		for(var i = 0; i< invoicePerYear.length;i++){
+        	
+	           	if(Number(removeComma(invoicePerYear[i].value)) < removeComma(totalcompliancePrcntAmt[i].value)){
+	            	totalcompliancePrcntAmt[i].style.border="thin solid RED";
+	            	totalcompliancePrcnt[i].style.border="thin solid RED";
+	            	spanTotalError[i].style.display="Block";
+	            	spanTotalError1[i].style.display="Block";
+	            	buttonElement[0].disabled = true;
+	            	boolButton = true;
+	            	spanTotalError[i].innerHTML ='Error:- Invoice Percent is out of bound.';
+	            	spanTotalError1[i].innerHTML ='Error:- Invoice Volume cannot be more that Yearly Electronic Volume.';
+	            }
+	            else{
+	            	totalcompliancePrcntAmt[i].style.border="thin solid #D3D3D3";
+	            	totalcompliancePrcnt[i].style.border="thin solid #D3D3D3";
+	            	spanTotalError[i].style.display="none";
+	            	spanTotalError1[i].style.display="none";
+	            	buttonElement[0].disabled = boolButton;
+            	}
+      		}	
+       	}
+        
+        var totalcompliancePrcntAmt = document.getElementsByClassName('totalcompliancePrcntAmt');
+        for(var i = 0; i < totalcompliancePrcntAmt.length; i++){ 
+            console.log('Bf::  '+ totalcompliancePrcntAmt[i].value);
+            totalcompliancePrcntAmt[i].value = addCommaDecimal(totalcompliancePrcntAmt[i].value);
+            console.log('Af::  '+ totalcompliancePrcntAmt[i].value);
+        }
+        
+        document.getElementById(inputInvoice.id).value = addCommaDecimal(val); 
+    }
+    function saveAndClose(val){
+        
+        var spinnerData = document.getElementById('spinner');
+        spinnerData.style.display = "block";
+        var redirectBool = true;
+        var totalcompliancePrcntAmt = document.getElementsByClassName('totalcompliancePrcntAmt');
+        var invoicePerYear = document.getElementsByClassName('payInvoice');
+        for(var i = 0 ;i < totalcompliancePrcntAmt.length; i++){
+           if(parseFloat(invoicePerYear[i].value) !== parseFloat(totalcompliancePrcntAmt[i].value)){
+            var spanPercent = document.getElementsByClassName('percentNotification');
+            spanPercent[0].style.display='block'; 
+            document.getElementById("notificationHeading").innerHTML = 'Please adjust the country specific invoice volume (either by % or amount) so total adds up to 100%';
+            redirectBool = false;
+            spinnerData.style.display = "none";
+            //totalcompliancePrcntAmt[i].style.border = "thin solid RED";
+           }
+        }
+        
+        if(redirectBool === true){
+            calculateDiscountAndTotal();
+            //invoice value
+            var invoiceValue = document.getElementsByClassName('invoiceValue');
+            for(var indexI = 0; indexI<invoiceValue.length; indexI++){
+                invoiceValue[indexI].value = removeComma(invoiceValue[indexI].value);
+            }
+            
+            //For invoice quantity
+            var invoiceAmount = document.getElementsByClassName('payInvoice');
+            for(var i = 0; i<invoiceAmount.length; i++){
+                invoiceAmount[i].value = removeComma(invoiceAmount[i].value);
+            }
+            
+            //for list price
+            var listPrice = document.getElementsByClassName('listPrice');
+            for(var i = 0; i<listPrice.length; i++){
+                listPrice[i].value = removeComma(listPrice[i].value);
+            }
+            
+            //for base price
+            var basePrice = document.getElementsByClassName('basePrice');
+            for(var i = 0; i<basePrice.length; i++){
+                basePrice[i].value = removeComma(basePrice[i].value);
+            }
+            
+            //for net total
+            var netTotalPrice = document.getElementsByClassName('netTotal'); 
+            for(var i = 0; i<netTotalPrice.length; i++){
+                netTotalPrice[i].value = removeComma(netTotalPrice[i].value);
+            }
+             
+            var uplift = document.getElementsByClassName('uplift');
+            for(var i = 0; i<uplift.length; i++){
+                uplift[i].value = removeComma(uplift[i].value);  
+            }
+            
+            var AddDiscount = document.getElementsByClassName('AddDiscount');
+            for(var i = 0; i<AddDiscount.length; i++){
+                AddDiscount[i].value = removeComma(AddDiscount[i].value);  
+            } 
+            
+            var scanInvoice = document.getElementsByClassName('scanInvoice');
+            for(var i = 0; i<scanInvoice.length; i++){
+                scanInvoice[i].value = removeComma(scanInvoice[i].value);
+            }
+            var netPrice = document.getElementsByClassName('netPrice');
+            for(var i = 0; i<netPrice.length; i++){
+                netPrice[i].value = removeComma(netPrice[i].value);
+            }
+            
+            var upliftAmtOrPercent = document.getElementsByClassName('percentOrAmtUplift');
+            document.getElementById('j_id0:frmid:hiddenupliftIdentifier').value = upliftAmtOrPercent[0].value;
+         	var percentOrAmt = document.getElementsByClassName("percentOrAmt");
+            document.getElementById('j_id0:frmid:hiddenDiscountIdentifier').value = percentOrAmt[0].value;
+            Save();
+        }
+    }
+
+    function errorCheck(val){
+     
+        var spanError = document.getElementsByClassName('spanID1');
+        val.value = removeComma(val.value);   
+        if( ! val.value.match(/^[0-9]*$/) || val.value.length < 1){
+            
+            spanError[0].style.display='block'; 
+            document.getElementById("errorHeading").innerHTML = "Please enter a number";
+            val.style.border = "thin solid red";
+        }
+        else{
+            spanError[0].style.display='none';
+            val.style.border = "thin solid #cccccc";
+            
+            val.value = addComma(val.value);
+            //console.log(val.value.replace (/,/g, ""));
+        }
+    }
+    function errorDecimalCheck(val){
+        
+        var spanError = document.getElementsByClassName('spanID1');
+       
+        //val.value = removeComma(val.value);
+        var aftComma = removeComma(val.value);
+        if( ! aftComma.match(/^(\d*\.)?\d+$/) || aftComma.length < 1){
+            
+            spanError[0].style.display='block'; 
+            document.getElementById("errorHeading").innerHTML = "Please enter a number";
+            val.style.border = "thin solid red";
+            return false;
+        }
+        else{
+            
+            spanError[0].style.display='none';
+            val.style.border = "thin solid #cccccc";
+            
+            
+            //val.value = addComma(val.value);
+        }
+    }
+    function calculateDiscountAndTotal(){
+        
+        var totalYear = '{!sizeOfmapOfWrapperForPay}';
+        var totalAvgDiscount = 0;
+        
+        //For the avg of the invoices
+        var payInvoices = document.getElementsByClassName("payInvoice");
+        var avgInvoice = document.getElementsByClassName("avgInvoice");
+        var totalInvoice = 0;
+        for(var index = 0; index < payInvoices.length; index++){
+             
+            var quantity = removeComma(payInvoices[index].value);
+            if(!payInvoices[index].value){
+                quantity = 0;
+            }
+            totalInvoice = parseInt(totalInvoice) + parseInt(quantity) ;
+        }
+        avgInvoice[0].value = parseInt(totalInvoice) / totalYear;
+        avgInvoice[0].value = Math.round(avgInvoice[0].value);
+        
+        avgInvoice[0].value = addComma(avgInvoice[0].value);
+        
+        //for the RangeCheck basePrice
+        quantityRangeCheck();
+        
+        var basePrices = document.getElementsByClassName("basePrice");
+        var avgBasePrice = document.getElementsByClassName("avgbasePrice");
+        var totalBasePrice = 0;
+        for(var index = 0; index < basePrices.length; index++){
+            
+            var price = removeComma(basePrices[index].value);
+            if(!removeComma(basePrices[index].value)){
+                price = 0;
+            }
+            totalBasePrice = parseInt(price) + parseInt(totalBasePrice);
+        }
+        avgBasePrice[0].value = parseInt(totalBasePrice) / totalYear;
+        avgBasePrice[0].value = Math.round(avgBasePrice[0].value);
+        avgBasePrice[0].value = addComma(avgBasePrice[0].value);
+        
+        //for the avg list price
+        var listPrices = document.getElementsByClassName("listPrice");
+        var avgListPrice = document.getElementsByClassName("avgListPrice");
+        var totalPrice = 0;
+        for(var index = 0; index < listPrices.length; index++){
+            
+            var price = removeComma(listPrices[index].value);
+            if(!listPrices[index].value){
+                price = 0;
+            }
+            totalPrice = parseInt(price) + parseInt(totalPrice);
+        }
+        
+        avgListPrice[0].value = parseInt(totalPrice) / totalYear;
+        avgListPrice[0].value = Math.round(avgListPrice[0].value);
+        avgListPrice[0].value = addComma(avgListPrice[0].value);
+        
+        //for the avg additional discount
+        var addDiscount = document.getElementsByClassName("AddDiscount");
+        var percentOrAmt = document.getElementsByClassName("percentOrAmt");
+        var avgAdditionalDiscount = document.getElementsByClassName("avgAdditionalDiscount");
+        var totalAddDiscount = 0;
+        for(var index = 0; index < addDiscount.length; index++){
+            var discount = removeComma(addDiscount[index].value);
+            if(!addDiscount[index].value){
+                discount = 0;
+            }
+            totalAddDiscount = parseInt(totalAddDiscount) + parseInt(discount);
+        }
+        
+        avgAdditionalDiscount[0].innerHTML = parseInt(totalAddDiscount) / totalYear;
+        avgAdditionalDiscount[0].innerHTML = parseFloat(avgAdditionalDiscount[0].innerHTML).toFixed(2);
+        avgAdditionalDiscount[0].value = parseFloat(avgAdditionalDiscount[0].innerHTML).toFixed(2);
+        if(percentOrAmt[0].value == '%'){
+            avgAdditionalDiscount[0].innerHTML = Number(avgAdditionalDiscount[0].innerHTML).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+        else if(percentOrAmt[0].value == 'amt'){
+            avgAdditionalDiscount[0].innerHTML = addComma(avgAdditionalDiscount[0].innerHTML);
+        }
+        
+        document.getElementById('j_id0:frmid:hiddenAvgDiscount').value = parseInt(totalAddDiscount) / parseInt(totalYear); 
+        document.getElementById('j_id0:frmid:hiddenDiscountIdentifier').value = percentOrAmt[0].value;
+
+        //for the calaulation of the net total after the add discount
+        var basePrice = document.getElementsByClassName('basePrice');
+        var netTotal = document.getElementsByClassName('netTotal');
+        var uplift = document.getElementsByClassName('uplift');
+        var upliftAmtOrPercent = document.getElementsByClassName('percentOrAmtUplift');
+        var proratedMultiplier = document.getElementsByClassName('prorateddMultiplier');
+        var netPrice = document.getElementsByClassName('netPrice');
+        
+        for(var indexI = 0; indexI < netTotal.length; indexI++){
+            var discountAmt = 0;
+            var addUplift = 0;
+            var test1= 0;
+            if(percentOrAmt[0].value === '%' && upliftAmtOrPercent[0].value === '%'){
+            	// var upliftDiscount = removeComma(uplift[indexI].value) - removeComma(addDiscount[indexI].value);
+                // discountAmt = (removeComma(basePrice[indexI].value) * parseFloat(proratedMultiplier[indexI].value)  * Number(upliftDiscount)) / 100;
+                // addUplift = (removeComma(basePrice[indexI].value) * parseFloat(proratedMultiplier[indexI].value)  * removeComma(uplift[indexI].value)) / 100;
+                // console.log('addDiscount ::::  '+removeComma(addDiscount[indexI].value));
+                // discountAmt = ((Number(removeComma(basePrice[indexI].value)) + Number(addUplift)) * parseFloat(proratedMultiplier[indexI].value)  * removeComma(addDiscount[indexI].value)) / 100;
+                // var test  = 0 - Number(discountAmt);
+                // console.log('discountAmt ::::  '+ test);
+
+                if(Number(removeComma(uplift[indexI].value)) > 0){
+                    addUplift = (removeComma(basePrice[indexI].value) * parseFloat(proratedMultiplier[indexI].value)  * removeComma(uplift[indexI].value)) / 100;
+                }
+                if(Number(removeComma(addDiscount[indexI].value)) > 0){
+                    discountAmt = ((Number(removeComma(basePrice[indexI].value)) + Number(addUplift)) * parseFloat(proratedMultiplier[indexI].value)  * removeComma(addDiscount[indexI].value)) / 100;
+                }
+                test1 = (addUplift - discountAmt);
+                
+            }
+            else if(percentOrAmt[0].value === 'amt' && upliftAmtOrPercent[0].value === 'amt'){
+                
+            	var upliftDiscount = removeComma(uplift[indexI].value)- removeComma(addDiscount[indexI].value);
+                discountAmt = Number(upliftDiscount);
+                addUplift =  Number(removeComma(uplift[indexI].value));
+                //test1 =  Number(removeComma(uplift[indexI].value)) - Number(removeComma(addDiscount[indexI].value));
+                test1 = (Number(removeComma(uplift[indexI].value)) - Number(removeComma(addDiscount[indexI].value)));
+            }
+            else if(percentOrAmt[0].value === '%' && upliftAmtOrPercent[0].value === 'amt'){
+            	var upliftDiscount = removeComma(uplift[indexI].value) ;
+                var discountAmt1 = (removeComma(basePrice[indexI].value) * parseFloat(proratedMultiplier[indexI].value) * removeComma(addDiscount[indexI].value)) / 100;
+            	discountAmt = Number(upliftDiscount) - Number(discountAmt1);
+                addUplift =  Number(upliftDiscount);
+                test1 =  Number(upliftDiscount) - Number(discountAmt1) ;
+                
+            }
+            else if(percentOrAmt[0].value === 'amt' && upliftAmtOrPercent[0].value === '%'){
+            	var upliftDiscount = removeComma(addDiscount[indexI].value);
+                var discountAmt1 = (removeComma(basePrice[indexI].value) * parseFloat(proratedMultiplier[indexI].value) * removeComma(uplift[indexI].value)) / 100;
+            	discountAmt = Number(discountAmt1) - Number(upliftDiscount);
+            	addUplift = (removeComma(basePrice[indexI].value) * parseFloat(proratedMultiplier[indexI].value)  * removeComma(uplift[indexI].value)) / 100;
+                test1 = Number(discountAmt1) - Number(upliftDiscount);
+            }
+           
+            var listPriceAmount = removeComma(basePrice[indexI].value) * parseFloat(proratedMultiplier[indexI].value);
+           	netPrice[indexI].value = Number(listPriceAmount) + Number(test1);
+           	netPrice[indexI].value = addComma(netPrice[indexI].value);
+            netTotal[indexI].value = Number(listPriceAmount) + Number(test1);  
+            netTotal[indexI].value = addComma(netTotal[indexI].value);
+        }
+        
+        //for the net total for the uplift
+        var uplift = document.getElementsByClassName('uplift');
+        
+        //Average of the uplift discount
+        var avgUplift = 0;
+        for(var index = 0; index < uplift.length; index++){
+            
+            avgUplift = parseInt(avgUplift) + parseInt(removeComma(uplift[index].value)); 
+            
+        }
+        document.getElementById('j_id0:frmid:avgUpliftOutput').value = parseInt(avgUplift) / parseInt(totalYear);
+        document.getElementById('j_id0:frmid:avgUpliftOutput').innerHTML = parseFloat(document.getElementById('j_id0:frmid:avgUpliftOutput').value).toFixed(2);
+        var upliftAmtOrPercent = document.getElementsByClassName('percentOrAmtUplift');
+        if(upliftAmtOrPercent[0].value == '%'){
+            document.getElementById('j_id0:frmid:avgUpliftOutput').innerHTML = Number(document.getElementById('j_id0:frmid:avgUpliftOutput').innerHTML).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+        else if(upliftAmtOrPercent[0].value == 'amt'){
+            document.getElementById('j_id0:frmid:avgUpliftOutput').innerHTML = addComma(document.getElementById('j_id0:frmid:avgUpliftOutput').innerHTML);
+        }
+        
+        //for the avg of the net total
+        var netTotals = document.getElementsByClassName('netTotal');
+        var avgNetTotal = document.getElementsByClassName('avgNetTotal');
+        var totalNetAmt = 0;
+        for(var index = 0; index < netTotals.length; index++){
+            var netTotal = removeComma(netTotals[index].value);
+            totalNetAmt = parseInt(totalNetAmt) + parseInt(netTotal);
+        }
+        avgNetTotal[0].value = 0;
+        avgNetTotal[0].value = parseInt(totalNetAmt) / totalYear;
+        avgNetTotal[0].value = parseInt(avgNetTotal[0].value);
+        avgNetTotal[0].value = addComma(avgNetTotal[0].value);
+        
+        //for the notification that avg discoount is greater than 20%
+        var avgAdditionalDiscount = document.getElementsByClassName("avgAdditionalDiscount");
+        var spanPercent = document.getElementsByClassName('percentNotification');
+        if(percentOrAmt[0].value === '%' && avgAdditionalDiscount[0].value > 20){
+            
+            //spanPercent[0].style.display='block';
+            //document.getElementById("notificationHeading").innerHTML = "Average Additional discount is greater than 20%";
+        }
+        else if(percentOrAmt[0].value === 'amt'){
+            var disAmount = parseFloat((removeComma(avgAdditionalDiscount[0].value) * 100)/ removeComma(avgNetTotal[0].value));
+            document.getElementById('j_id0:frmid:hiddenAvgDiscount').value = disAmount;
+            if(disAmount > 20){
+                
+                //spanPercent[0].style.display='block';
+                //document.getElementById("notificationHeading").innerHTML = "Average Additional discount is greater than 20%";
+            }
+        }
+        else{
+            //avgNetTotal[0].value = addComma(avgNetTotal[0].value);
+            spanPercent[0].style.display='none';
+        }
+        
+        
+        //For Average net price
+       	var avgPrice = document.getElementsByClassName('avgNetPrice');
+        var avgNetPrice = document.getElementsByClassName("netPrice");
+        var avgNP = 0;
+        for(var index = 0; index < avgNetPrice.length; index++){
+            
+            avgNP = parseInt(avgNP) + parseInt(removeComma(avgNetPrice[index].value)); 
+            
+        }
+        avgPrice[0].value = 0;
+        avgPrice[0].value = parseInt(avgNP) / totalYear;
+        avgPrice[0].value = parseInt(avgPrice[0].value);
+        avgPrice[0].value = addComma(avgPrice[0].value);
+        
+        
+        //For average prorated Multuplier
+       	var avgProMultiplier = document.getElementsByClassName('avgProratedMultiplier');
+        var avgProrateddMultiplier = document.getElementsByClassName("prorateddMultiplier");
+        var avgPM = 0;
+        for(var index = 0; index < avgProrateddMultiplier.length; index++){
+            
+            avgPM = parseFloat(avgPM) + parseFloat(avgProrateddMultiplier[index].value); 
+            
+            
+        }
+        avgProMultiplier[0].value = 0;
+        avgProMultiplier[0].value = parseFloat(avgPM) / totalYear;
+        // console.log(avgProMultiplier[0].value);
+        checkDiscountUplif();
+    }
+    
+    //Used to check the quantiy is range or not
+    function quantityRangeCheck(){
+        var avgInvoice = document.getElementsByClassName("avgInvoice");
+        var maxQuantity = '{!maxQuantity}'.replace(",","");
+        var minQuantity = '{!minQuantity}'.replace(",","");        
+        if(minQuantity.includes("+")){
+            minQuantity.replace("+","");
+        }
+        var spanError = document.getElementsByClassName('invoiceNotification');
+        avgInvoice[0].value = removeComma(avgInvoice[0].value);
+        
+        if(avgInvoice[0].value < parseInt(minQuantity)){
+            spanError[0].style.display='block'; 
+            document.getElementById("invoiceNotificationHeading").innerHTML = "For "+'{!payProductName}'+", the average annual invoice volume should fall between "+minQuantity+" and " +maxQuantity+". If the annual invoice volume falls outside this range, please select the wrench icon to select a different tier."; 
+        	if(parseInt(minQuantity) === 800001){	
+        		document.getElementById("invoiceNotificationHeading").innerHTML = "For "+'{!payProductName}'+", the average annual invoice volume should be over "+minQuantity+". If the annual invoice volume falls outside this range, please select the wrench icon to select a different tier."; 
+        	}
+        }
+        else if(avgInvoice[0].value > parseInt(maxQuantity)){
+        
+            spanError[0].style.display='block'; 
+            document.getElementById("invoiceNotificationHeading").innerHTML = "For "+'{!payProductName}'+", the average annual invoice volume should fall between "+minQuantity+" and " +maxQuantity+". If the annual invoice volume falls outside this range, please select the wrench icon to select a different tier."; 
+        }
+        else{
+            spanError[0].style.display='none';
+        }
+        avgInvoice[0].value = addComma(avgInvoice[0].value);
+    }
+    
+    //Used to hide th error message
+    function hideNotification(val){
+        
+        if(val === 'percent'){
+            var spanPercent = document.getElementsByClassName('percentNotification');
+            spanPercent[0].style.display = 'none';
+        }
+        else if(val === "invoice"){
+            var spanInvoice = document.getElementsByClassName('invoiceNotification');
+            spanInvoice[0].style.display = 'none';
+        }
+        else if(val === 'uplift' ){
+            var spanUplift = document.getElementsByClassName('upliftNotification');
+            spanUplift[0].style.display = 'none';
+        }
+    }
+    function redirect(){
+        var url = '{!URLProductConfig}';
+        location.href = url;
+    }
+    function updateCompliance(){
+        var invoicePerYear = document.getElementsByClassName('payInvoice');
+        var compliancePercent = document.getElementsByClassName('invoicePercnt');
+        var complianceAmount = document.getElementsByClassName('invoiceValue');
+        for(var i = 0; i< compliancePercent.length;i++ ){
+            /*var v1 = removeComma(invoicePerYear[i%invoicePerYear.length].value);
+            complianceAmount[i].value = Math.round(Number(compliancePercent[i].value)*(Number(v1)/100)); 
+            complianceAmount[i].value = addComma(complianceAmount[i].value);   */
+            if(invoicePerYear[i%invoicePerYear.length].value == 0){
+                compliancePercent[i].value = 0;
+                complianceAmount[i].value = 0;  
+            }
+            else{
+                percnt(compliancePercent[i].value); 
+            }
+        }
+    }
+    var perviousHiddenUplift = [];
+    var controllerUplift = new Map();
+    window.onload = function() {
+        addListItem("window onload");
+        controllerUplift = JSON.parse('{!JSONmap}');
+        //console.log(controllerUplift);
+        //console.log(Object.keys(controllerUplift).length);
+        for (let [key, value] of Object.entries(controllerUplift)) {
+            //console.log(`${key}: ${value}`);
+            perviousHiddenUplift.push(`${value}`);
+        }       
+    };
+    
+    function addListItem(text){
+        
+        var percentOrAmt = document.getElementsByClassName("percentOrAmt");
+        var dis = '{!isDiscountInPercent}';
+        var amount= '{!isDiscountInAmount}';
+        var avgDiscountSymbol = document.getElementsByClassName('avgDiscountSymbol');
+        if(dis === 'true'){
+            percentOrAmt[0].options[0].defaultSelected = true;
+            avgDiscountSymbol[0].children[2].style.display = 'inline';
+            avgDiscountSymbol[0].children[0].style.display = 'none';
+        }
+        else if(amount === 'true'){
+            percentOrAmt[0].options[1].defaultSelected = true;
+          	avgDiscountSymbol[0].children[0].style.display = 'inline';
+           	avgDiscountSymbol[0].children[2].style.display = 'none';
+        }
+        var avgUpliftSymbol = document.getElementsByClassName('avgUpliftSymbol');
+        
+        avgUpliftSymbol[0].children[0].style.display = 'none';
+        avgUpliftSymbol[0].children[2].style.display = 'inline';
+        
+        var invoiceValue = document.getElementsByClassName('invoiceValue');
+        for(var indexI = 0; indexI<invoiceValue.length; indexI++){
+            invoiceValue[indexI].value = addCommaDecimal(invoiceValue[indexI].value);
+        }
+        
+        //For invoice quantity
+        var invoiceAmount = document.getElementsByClassName('payInvoice');
+        for(var i = 0; i<invoiceAmount.length; i++){
+            invoiceAmount[i].value = addComma(invoiceAmount[i].value);
+        }
+        
+        //for list price
+        var listPrice = document.getElementsByClassName('listPrice');
+        for(var i = 0; i<listPrice.length; i++){
+            listPrice[i].value = addComma(listPrice[i].value);
+        }
+        
+        //for base price
+        var basePrice = document.getElementsByClassName('basePrice');
+        for(var i = 0; i<basePrice.length; i++){
+            basePrice[i].value = addComma(basePrice[i].value);
+        } 
+        var netPrice = document.getElementsByClassName('netPrice');
+        for(var i = 0; i<netPrice.length; i++){
+            netPrice[i].value = addComma(netPrice[i].value); 
+        }
+       
+        var netTotalPrice = document.getElementsByClassName('netTotal');
+        for(var i = 0; i<netTotalPrice.length; i++){
+            netTotalPrice[i].value = addComma(netTotalPrice[i].value); 
+        }
+        
+        var AddDiscount = document.getElementsByClassName('AddDiscount');
+        for(var i = 0; i<AddDiscount.length; i++){
+        
+            AddDiscount[i].value = addComma(AddDiscount[i].value);  
+        }
+        
+        var uplift = document.getElementsByClassName('uplift');
+        for(var i = 0; i<uplift.length; i++){
+            uplift[i].value = addCommaDecimal(uplift[i].value);  
+        }
+        
+        var scanInvoice = document.getElementsByClassName('scanInvoice');
+        for(var i = 0; i<scanInvoice.length; i++){
+            scanInvoice[i].value = addComma(scanInvoice[i].value);
+        }
+        var payInvoiceYearly = document.getElementsByClassName('payInvoice');
+        var totalInvoiceAmount = document.getElementsByClassName('totalcompliancePrcntAmt');
+        var totalInvoicePercnt = document.getElementsByClassName('totalcompliancePrcnt');
+        var invoicePercent = document.getElementsByClassName('invoicePercnt');
+        for(var i = 1; i <= payInvoiceYearly.length; i++){
+            var totalInvoice = 0;
+            var totalPercent = 0;
+            var z = i-1;
+            for(var j = 0 ;j <= 7*payInvoiceYearly.length; j = j+payInvoiceYearly.length){
+                
+                var amount = (invoicePercent[j+i-1].value /100 ) * removeComma(payInvoiceYearly[z].value);
+                totalInvoice = totalInvoice + amount;
+                totalPercent = Number(totalPercent) + Number(invoicePercent[j+i-1].value);
+            }
+            totalInvoiceAmount[z].value = addComma(totalInvoice);
+            totalInvoicePercnt[z].value = totalPercent;
+            z++;
+        }
+    }
+    
+    function calculateUpliftPrice(){
+        
+        var upliftAmtOrPercent = document.getElementsByClassName('percentOrAmtUplift');
+        document.getElementById('j_id0:frmid:hiddenupliftIdentifier').value = upliftAmtOrPercent[0].value;
+        
+        //basePrice For the list price
+        var basePrice = document.getElementsByClassName('basePrice');
+        
+        //Net price netPrice 
+         var netPrice = document.getElementsByClassName('netPrice');
+        var listprice = document.getElementsByClassName('listPrice');
+        var uplift = document.getElementsByClassName('uplift');
+        var upliftAmt = document.getElementsByClassName('upliftAmount');
+        var proratedMultiplier = document.getElementsByClassName('prorateddMultiplier');
+        
+        
+        for(var indx = 0; indx < listprice.length; indx++){
+            if(uplift[indx].value.length !== 0){
+            	
+                //var minus =  parseInt(removeComma(basePrice[indx].value) *100)/parseFloat(parseFloat(controllerUplift[indx+1])+100);
+                //var minus = parseInt(removeComma(basePrice[indx].value) *parseFloat(controllerUplift[indx+1]))/100;
+                var minus = removeComma(basePrice[indx].value) * parseFloat(proratedMultiplier[indx].value);
+                var addAmount = 0;
+                var hiddenUplift = 0;
+                if(upliftAmtOrPercent[0].value == 'amt'){ 
+                    console.log(  upliftAmt[indx].value);
+                    console.log( uplift[indx].value);
+                    upliftAmt[indx].value = removeComma(uplift[indx].value);
+                    hiddenUplift = ((removeComma(uplift[indx].value) * 100) / removeComma(basePrice[indx].value)).toFixed(3);
+                    addAmount = removeComma(uplift[indx].value); 
+                }
+                else if(upliftAmtOrPercent[0].value == '%'){
+                    
+                    addAmount = (minus * uplift[indx].value) / 100; 
+                    upliftAmt[indx].value = addAmount; 
+                    hiddenUplift = uplift[indx].value;
+                }
+               
+                //netPrice[indx].value = parseFloat(Math.round(minus)) + parseFloat(addAmount);
+                //netPrice[indx].value = addComma(netPrice[indx].value);
+                
+                uplift[indx].value = addCommaDecimal(removeComma(uplift[indx].value));
+                controllerUplift[indx+1] = hiddenUplift; 
+
+                console.log('1 :::::  '+  upliftAmt[indx].value);
+                    console.log( uplift[indx].value);
+            }
+        }
+        var upliftAmt = document.getElementsByClassName('upliftAmount');
+        
+    }
+    
+    //Used to calculate the uplift and discount
+    function checkDiscountUplif(){
+        var avgBasePrice = document.getElementsByClassName('avgbasePrice');
+        var averageNetAmount = document.getElementsByClassName('avgNetTotal');
+        var spanError = document.getElementsByClassName('upliftNotification');
+        var avgUD = document.getElementsByClassName('avgUpliftDiscount');
+        var avgNetPrice = document.getElementsByClassName('avgNetPrice');
+        var avgUplift = document.getElementsByClassName('avgUpliftPercent'); 
+        var avgDiscount = document.getElementsByClassName('avgAdditionalDiscount');
+        var avgProratedMultiplier = document.getElementsByClassName('avgProratedMultiplier');
+        var testValue =  avgUplift[0].value - avgDiscount[0].value;
+        var netTotal = Number(removeComma(avgBasePrice[0].value)) * Number(removeComma(avgProratedMultiplier[0].value));
+        var testVal = ((Number(removeComma(averageNetAmount[0].value))- Number(netTotal))*100)/Number(netTotal);
+       
+       var proratedMultiplier = document.getElementsByClassName('prorateddMultiplier');
+       var basePrice = document.getElementsByClassName('basePrice');
+       var totalListPrice = 0;
+       for(var i = 0; i < proratedMultiplier.length; i++){
+       		var proMultiplier = proratedMultiplier[i].value;
+       		totalListPrice = (parseFloat(proMultiplier).toFixed(6) * Number(removeComma(basePrice[i].value))) + Number(totalListPrice);
+       		totalListPrice = parseFloat(totalListPrice).toFixed(0);
+       }
+       totalListPrice = parseInt(totalListPrice) / proratedMultiplier.length;
+       totalListPrice = parseInt(totalListPrice);
+       
+       var testVal1 = ((Number(removeComma(averageNetAmount[0].value)) - Number(totalListPrice))*100)/ Number(totalListPrice);
+       
+     
+        if(testVal1 > 15){
+            spanError[0].style.display='block'; 
+            document.getElementById("upliftNotificationHeading").innerHTML = "Deviation from list price is greater than 15 ";
+            avgUD[0].value = testVal1.toFixed(2);
+        }
+        else{
+            spanError[0].style.display='none'; 
+            avgUD[0].value = testVal1.toFixed(2);
+        } 
+    }
+    
+    //Used to show the help text message
+    function showMessage(){
+        var productDiv = document.getElementsByClassName('productDiv');
+        productDiv[0].style.display = "block"; 
+        var productDivMessage = document.getElementsByClassName('productDivMessage');
+        var maxQuantity = '{!maxQuantity}'.replace(",","");
+        var minQuantity = '{!minQuantity}'.replace(",","");
+        
+        if(minQuantity.includes("+")){
+            minQuantity.replace("+","");
+        }
+        productDivMessage[0].innerHTML = "For "+'{!payProductName}'+", the average annual invoice volume should fall between "+minQuantity+" and " +maxQuantity+". ";
+	  	if(parseInt(minQuantity) === 800001){	
+      		
+        	productDivMessage[0].innerHTML = "For "+'{!payProductName}'+", the average annual invoice volume should be over "+minQuantity+" .";
+      	}
+    }
+    
+    //Usedd to hide the message of the help text
+    function hideMessage(){
+        var productDiv = document.getElementsByClassName('productDiv');
+        productDiv[0].style.display = "none";
+    }
+    
+    //Used to remove comma
+    function removeComma(valWithComma){
+        var valWithoutComma = valWithComma.replace (/,/g, "");
+        return valWithoutComma;
+    }
+    
+    //Used to add comma in string
+    function addComma(valueWitoutComma){
+        var v1 = Number(valueWitoutComma).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        var v2 = v1.slice(0, -3);
+        var number = 350000;
+        //Number(valueWitoutComma).toLocaleString('en-IN')
+        return v2;
+    }
+    
+    //Used to add comma and decimal in the invoice amount value
+    function addCommaDecimal(valueWitoutComma){
+        var v1 = Number(valueWitoutComma).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        var v2 = v1.slice(0, -3);
+        var number = 350000;
+        //Number(valueWitoutComma).toLocaleString('en-IN')
+        return v1;
+    }
+    document.onkeypress=function(e){
+        var e=window.event;
+        
+        if(e.charCode == 13){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+    //To add comma in aditional discount
+    function commaInAddDiscount(val){
+        if(val.value.length > 0)
+        	val.value = addComma(val.value);
+    }
+    
+    //To change symbol of the average uplift
+    function changeSymbol(classNameDiv, classNameOption){
+    	
+    	var avgSymbol = document.getElementsByClassName(classNameDiv);
+        var optionSymbol = document.getElementsByClassName(classNameOption);
+        if(optionSymbol[0].value === '%'){
+        	avgSymbol[0].children[2].style.display = 'inline';
+        	avgSymbol[0].children[0].style.display = 'none';	
+        }
+        else if(optionSymbol[0].value === 'amt'){
+        	avgSymbol[0].children[0].style.display = 'inline';
+        	avgSymbol[0].children[2].style.display = 'none';
+        }
+        calculateUpliftPrice();
+    	
+    }
+    </script>
+</apex:page>

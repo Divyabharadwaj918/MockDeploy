@@ -1,0 +1,23 @@
+<aura:component >
+	<aura:attribute name="dataObj" type="Object"/>
+	
+	<button aura:id="infoIcon" class="slds-button slds-button_icon slds-button_icon-xx-small" title="Provide description of action" onclick="{!c.handleMouseEnter}">
+  		<lightning:icon iconName="utility:info_alt" size="xx-small"/>
+	</button>
+	
+	<!--  <span onclick="{!c.handleMouseEnter}">			
+		<lightning:icon iconName="action:info" size="xx-small"/>
+	</span>-->
+	<span aura:id="popover" class="slds-popover .slds-nubbin_top-left slds-hide" role="dialog" style="z-index:5000;" aria-describedby="dialog-body-id-6" aria-labelledby="dialog-heading-id-6">
+		<button class="slds-button slds-button_icon slds-button_icon-small slds-float_right slds-popover__close slds-button_icon" title="Close dialog" onclick="{!c.handleMouseLeave}">			
+			<lightning:icon iconName="utility:close" size="x-small"/>
+			<span class="slds-assistive-text">Close dialog</span>
+		</button>
+		<header class="slds-popover__header">
+    		<h2 id="dialog-heading-id-6" class="slds-text-heading_small">This will display Account Name</h2>
+  		</header>
+		<div class="slds-popover__body" id="dialog-body-id-24" style="white-space: pre-wrap;white-space: -moz-pre-wrap;white-space: -pre-wrap;white-space: -o-pre-wrap;word-wrap: break-word;">
+			<p>This will display Account details.</p>
+		</div>
+	</span>
+</aura:component>

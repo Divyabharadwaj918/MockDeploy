@@ -1,0 +1,16 @@
+<aura:component >
+	<!-- Attributes -->
+	<aura:attribute name="country" type="String" />  
+	<aura:attribute name="noOfChars" type="Integer"/>
+	<aura:attribute name="countryCode" type="String"/>
+	<aura:attribute name="countryMap" type="Map"/>
+	
+	<!-- Handlers -->
+	<aura:handler name="init" action="{!c.doInit}" value="{!this}"/> 
+	
+	<!-- Markup -->
+	<span title="{!v.country}">
+		<b>{!v.countryCode}</b>
+	</span>
+	
+</aura:component>

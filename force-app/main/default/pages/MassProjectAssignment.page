@@ -1,0 +1,938 @@
+<!--
+*  Description     :   Page used to mass resource assignment to a project.
+*
+*  Created By      :   
+*  
+*  Created Date    :   
+*
+*  Revision Log    :   V_1.0 - Created 
+*                      
+*-->
+
+<apex:page controller="MassProjectAssignmentController" standardStylesheets="false" docType="html-5.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <apex:slds />  
+        <style>
+        
+        input[type=date]::-webkit-inner-spin-button { 
+            -webkit-appearance: none;
+            display: none;
+        }
+    
+    .test .slds-select_container::before,.test .slds-select_container::after{
+        border:0;
+    }
+    
+    .tbodyClass{
+        display:block;
+        max-height:200px;
+        overflow:auto;
+    }
+    
+    .class2{
+        display:table;
+        width:100%;
+        table-layout:fixed;
+    }
+    
+    .msgIcon {
+        display: none!important
+    }
+    .customMessage * {
+        color: #fff !important;
+    }
+    .customMessage {
+        margin: 5px 0!important;
+        opacity: 1!important;
+        width: 100%;
+        font-size: 12px;
+        border: 0px;
+        padding-left: 10px;
+    }
+    .message {
+        opacity: .1;
+    }
+    
+    .paddingLeft{
+        padding-left:2%;
+    }
+    </style>
+    
+    <script type="text/javascript">
+        
+        function searchRecords(elem){
+        onSearch(elem.value);
+    }
+    
+    function projectSearch(elem){
+        onSearchProject();
+    }
+    
+    function showDiv(divId){
+        document.getElementById(divId).className="slds-show";
+    }
+    
+    function hideDiv(divId){
+        document.getElementById(divId).className="slds-hide";
+    }
+    
+    function moveToResourceSection(selectedProjectListSize){
+        if(selectedProjectListSize > 0){    
+            hideDiv('krowProjectDiv');
+            showDiv('resourceSection');
+        }
+    }
+    
+    function backToProjectSection(){
+        hideDiv('resourceSection');
+        showDiv('krowProjectDiv');
+        moveToProjectPageFunction();
+    }
+    
+    function moveToProjectAssignemntPage(isAlertShown){
+        if(isAlertShown == 'false'){
+            hideDiv('resourceSection');
+            showDiv('projectAssignmentDiv');
+        }
+    } 
+    
+    function setResource(resourceId){
+        console.log('resourceId--'+resourceId);
+        resourceSelect(resourceId);
+    }
+    
+    function backToResourceSection(){
+        hideDiv('projectAssignmentDiv');
+        showDiv('resourceSection');
+    }
+    
+    function showProjects(trId, hideId){
+        
+        var tr = document.getElementById(trId);
+        if(tr.style.display == 'none'){
+            document.getElementById(trId).style.display = "table-row";
+            document.getElementById(hideId).style.display = "none";
+        }
+        else{
+            document.getElementById(trId).style.display = "none";
+        }
+    }
+    
+    //Added 13/05/19
+    function showUsedTemplate(trId, hideId){
+        var tr = document.getElementById(trId);
+        if(tr.style.display == 'none'){
+            document.getElementById(trId).style.display = "table-row";
+            document.getElementById(hideId).style.display = "none";
+        }
+        else{
+            document.getElementById(trId).style.display = "none";
+        }
+    }
+    
+    function backToHome(){
+        showDiv('krowProjectDiv');
+        hideDiv('backToHomePageDiv');
+    }
+    
+    function assignProjectSuccess(isAlertShown){
+        if(isAlertShown == 'false'){
+            showDiv('backToHomePageDiv');
+            hideDiv('projectAssignmentDiv');
+        }
+    }
+    
+    function selectAllProject(eleValue){
+        if(eleValue == true){
+            var projects = document.getElementsByClassName('projectCheckbox');
+            
+            for(var i=0; i<projects.length; i++){
+                projects[i].checked = true;
+            }
+        }
+        else{
+            var projects = document.getElementsByClassName('projectCheckbox');
+            
+            for(var i=0; i<projects.length; i++){
+                projects[i].checked = false;
+            }
+        }
+    }
+    
+    function checkHeaderCheckbox(){
+        var projects = document.getElementsByClassName('projectCheckbox');
+        var isChecked = true;
+        for(var i=0; i<projects.length; i++){
+            if(projects[i].checked == false){
+                document.getElementById('projectHeaderCheckbox').checked = false;
+                isChecked = false;
+                break;
+            }
+        }
+        if(isChecked == true)
+            document.getElementById('projectHeaderCheckbox').checked = true;
+    }
+    
+    //page message css.
+    function overridePageMessages(){
+        var textureEffect = '';
+        //Uncomment below line for texture effect on page messages
+        textureEffect = 'slds-theme--alert-texture';
+        $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);
+        $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success customMessage '+textureEffect);
+        $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);
+        $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);
+        
+        $('.errorM3').removeClass('errorM3');
+        $('.confirmM3').removeClass('confirmM3');
+        $('.infoM3').removeClass('infoM3');
+        $('.warningM3').removeClass('warningM3');
+    }
+    
+    function popoulateFilters(filterId){
+        onfilterSelection(filterId);
+    }
+    
+    function saveFilter(){
+        var filterRecords = '{!filterSize}';
+        console.log(filterRecords);
+        if(filterRecords>15){
+                    showToast('error','You can Save Maximum 15 filters,Please Delete or Update Previous Filters', 'error');
+
+        }
+        else{
+        var project = document.getElementsByClassName('ProjectModal')[0].className == "slds-show ProjectModal" ? true: false;
+        if(project){
+            var name = document.getElementsByClassName('filters')[0].value;
+            var nameString =document.getElementsByClassName('filterInputProject')[0].value;
+            var accountString =document.getElementsByClassName('statusFilterInput')[0].value;
+            
+            var statusString =document.getElementsByClassName('accountFilterInput')[0].value;
+            var priorityString =document.getElementsByClassName('priorityFilterInput')[0].value;
+            var riskString =document.getElementsByClassName('riskFilterInput')[0].value;
+            var countryString =document.getElementsByClassName('regionFilterInput')[0].value;
+            var allowSave =false;
+            
+            if( nameString || statusString || accountString|| priorityString || riskString || countryString) 
+                allowSave =true;
+            
+        }
+        else{
+            var name = document.getElementsByClassName('filterInputResource')[0].value;
+            var nameString =document.getElementsByClassName('filterResourceName')[0].value;
+            var RoleString =document.getElementsByClassName('roleFilterResource')[0].value;
+            var Region =document.getElementsByClassName('countryFilterInput')[0].value;
+            var allowSave =false;
+            if( nameString || RoleString || Region) 
+                allowSave =true;
+        }
+        if(name && allowSave ){ 
+            saveFilters();
+            setTimeout(showToast('Success','Filter has saved Sucessfully', 'success'),1500);
+            hideModal();
+        }
+        else if(!allowSave)
+            showToast('error','Please set the Filter details', 'error');
+        
+            else
+                showToast('error','Filter Name is Required', 'error')
+                }
+                }
+    
+    function showAlert(){
+        document.getElementsByClassName('spanID1')[0].style ="display:block;color:green;";
+        document.getElementById('successHeading').innerHTML ='Fiter has been saved successfully';
+        document.getElementsByClassName('alert')[0].className ="slds-notify slds-notify_toast slds-theme_success alert";
+        setTimeout(myTimer, 5000);
+    }
+    function myTimer(){
+        document.getElementsByClassName('spanID1')[0].style ="display:none;color:green;";
+        document.getElementById('successHeading').innerHTML ='';
+        document.getElementsByClassName('alert')[0].className ="slds-notify slds-notify_toast alert";
+    }
+    function showmodal(type){
+        document.getElementsByClassName('modal')[0].className ="slds-modal slds-fade-in-open slds-modal_small slds-show modal";
+        document.getElementsByClassName('backdrop')[0].className ="slds-backdrop slds-backdrop_open backdrop";
+        if(type == 'Save Filter')
+            document.getElementsByClassName('ProjectModal')[0].className ="slds-show ProjectModal";
+        else
+            document.getElementsByClassName('resourceModal')[0].className ="slds-show resourceModal";
+        
+    }
+    function showToast(title,message,type) {
+        sforce.one.showToast({
+            "title": title,
+            "message": message,
+            "type": type
+        });
+    }
+    function hideModal(){
+        document.getElementsByClassName('modal')[0].className ="slds-modal slds-fade-in-open slds-modal_small slds-hide modal";
+        document.getElementsByClassName('backdrop')[0].className ="backdrop";
+    }
+    function deleteFilter(){
+   		 deleteSelectedFilter();
+    }
+    function sortList(e){
+		sortListProject(e.id);
+    }
+    function sortResource(ex){
+    	sortResourceList(ex.id);
+    }
+    </script>
+    
+    <apex:form id="form">
+        
+        <apex:actionFunction name="onSearch" action="{!onSearch}" rerender="resourceTable" > 
+
+        </apex:actionFunction>
+        <apex:actionFunction name="sortListProject" action="{!getKrowProjects}" rerender="projectTable">
+            <apex:param name="sortField" value=""/>
+        </apex:actionFunction>
+        <apex:actionFunction name="sortResourceList" action="{!getAllResourcePlanner}"  rerender="resourceTable">
+                    <apex:param name="sortResourceField" value=""/>
+        </apex:actionFunction>
+
+        
+        <apex:actionFunction name="onfilterSelection" action="{!onfilterSelection}" reRender="projectData,resourceData,projectTable,resourceTable,modalSection" status="status" > 
+            <apex:param name="filterID" value="" />
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="onSearchProject" action="{!onSearchProject}" rerender="projectTable" > 
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="resourceSelect" action="{!setSelectedResource}" rerender="resourceTable" status="status" > 
+            <apex:param name="selectedResourceId" value="" assignTo="{!selectedResourceId}" />
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="saveFilters" action="{!saveFilters}" rerender="projectData,resourceData" status="status" > 
+        </apex:actionFunction>
+        
+        <apex:actionFunction name="moveToProjectPageFunction" action="{!moveToProjectPage}"  status="status" rerender="projectData,projectTable" > 
+        </apex:actionFunction>
+        <apex:actionFunction name="getKrowProjects" action="{!getKrowProjects}" rerender="projectData, projectTable" />
+        <apex:actionFunction name="getAllResourcePlanner" action="{!getAllResourcePlanner}" rerender="resourceTable" />
+        <apex:actionfunction name="deleteSelectedFilter" action="{!deleteSelectedFilter}" rerender="projectData,resourceData,projectTable,resourceTable" status="status" ></apex:actionfunction>
+        
+        <apex:outputPanel id="modalSection">
+            <section role="dialog"   tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small slds-hide modal" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close">
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Save Filter</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-hide resourceModal">
+                            <div class= "slds-grid">
+                                <div class="slds-col">
+                            <apex:outputLabel >Filter Name:</apex:outputLabel>
+                            <apex:inputField id="filterInputResource" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small filterInputResource" value="{!filterRecordResource.Name}"  style="max-width:50%;" >
+                            </apex:inputField> 
+                                </div>
+                                  <div class="slds-col">
+                            <apex:outputLabel >Default:</apex:outputLabel>
+                            <apex:inputField id="filterResourceDefault" StyleClass="slds-checkbox slds-grid slds-wrap slds-m-bottom_small filterResourceDefault" value="{!filterRecordResource.Default__c}" onkeyup="searchRecords(this);" style=" width: 25px; height: 25px;" >
+                            </apex:inputField>
+                                </div>
+                                </div>
+                        </div>
+                        <div class="slds-hide ProjectModal"> 
+                            <div class= "slds-grid">
+                                <div class="slds-col">
+                            <apex:outputLabel >Filter Name:</apex:outputLabel>
+                            <apex:inputField id="filterInputName" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small filters" value="{!filterRecord.Name}"  style="max-width:50%;" >
+                            </apex:inputField>
+                            </div>
+                                <div class="slds-col">
+                            <apex:outputLabel >Default:</apex:outputLabel>
+                            <apex:inputField id="defaultFilterInput"  label="Default" StyleClass="slds-checkbox slds-checkbox--faux slds-grid slds-wrap slds-m-bottom_small defaultFilterInput" value="{!filterRecord.Default__c}"  style=" width: 25px; height: 25px;" >
+                            </apex:inputField>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <apex:commandButton styleClass="slds-button slds-button_neutral" value="Cancel" onclick="hideModal(); return false;" />
+                        <apex:commandButton styleClass="slds-button slds-button_brand" value="Save"  onclick="saveFilter(); return false; "   />
+                    </footer>
+                </div>
+            </section>
+        </apex:outputPanel>
+        <apex:pageBlock id="pageBlock">
+            <!-- Header of page START-->
+            <div class="slds-page-header">
+                <div class="slds-page-header__row">
+                    <div class="slds-page-header__col-title">
+                        <div class="slds-media">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-opportunity" title="opportunity">
+                                    <img class="" src="{!URLFOR($Resource.krow__SLDS260, 'assets/icons/standard/opportunity_60.png')}" alt="Down" style="width:30px;"/>
+                                    <span class="slds-assistive-text">Mass Project Assignment</span>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <div class="slds-page-header__name">
+                                    <div class="slds-page-header__name-title">
+                                        <h1>
+                                            <span class="slds-page-header__title slds-truncate" title="Rohde Corp - 80,000 Widgets">Mass Project Assignment</span>
+                                        </h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Header of page END -->
+            
+            
+            <apex:pageMessages id="msg" escape="false">
+            </apex:pageMessages>
+            
+            <!-- Krow project table - START -->
+            <div id="krowProjectDiv" class="slds-show" style="padding:1% 1%;">
+                <apex:outputPanel id="projectData">
+                    <div class="slds-form-element slds-box">
+                        <apex:outputLabel styleClass="slds-text-heading_small slds-grid slds-m-bottom_small" >Existing Filter:</apex:outputLabel>
+                        <apex:selectList styleClass="slds-select" size="1" value="{!defaultValue}" onchange="popoulateFilters(this.value);"  style="margin-left:5px;width:170px"> 
+                            <apex:selectOptions value="{!options}" ></apex:selectOptions>
+                        </apex:selectList>
+                    </div>
+                    <div class="slds-form-element slds-m-top_small slds-m-bottom_small slds-box" >
+                        <apex:outputLabel styleClass="slds-text-heading_small slds-grid slds-m-bottom_small" >New Filter:</apex:outputLabel>
+                        
+                        <div class ="slds-gutters slds-p-top-medium">
+                            <div class="slds-grid " id="filter">
+                                <div class ="slds-col slds-p-bottom_small">
+                                    
+                                    <apex:outputLabel >Project Name:</apex:outputLabel>
+                                    <apex:inputField id="filterInputProject" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small filterInputProject" value="{!filterRecord.Project_Name__c}" onkeyup="projectSearch(this);"   style="max-width:50%;" >
+                                    </apex:inputField> 
+                                    <apex:outputLabel >Status:</apex:outputLabel>
+                                    <apex:inputField id="statusFilterInput" label="status" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small statusFilterInput" value="{!filterRecord.Status__c}" onkeyup="projectSearch(this);" style="max-width:50%;">
+                                    </apex:inputField>
+                                </div>
+                                
+                                <div class ="slds-col ">
+                                    <apex:outputLabel >Buyer Account:</apex:outputLabel>
+                                    
+                                    <apex:inputField id="accountFilterInput"  label="Buyer Account" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small accountFilterInput" value="{!filterRecord.Buyer_Account__c}" onkeyup="projectSearch(this);" style="max-width:50%;">
+                                    </apex:inputField>
+                                    
+                                    <apex:outputLabel >Priority:</apex:outputLabel>
+                                    <apex:inputField id="priorityFilterInput"  label="Priority" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small priorityFilterInput" value="{!filterRecord.Priority__c}" onkeyup="projectSearch(this);" style="max-width:50%;" >
+                                    </apex:inputField>
+                                    
+                                </div>
+                                <div class ="slds-col slds-p-bottom_small">
+                                    <apex:outputLabel >Risk:</apex:outputLabel>
+                                    <apex:inputField Id="riskFilterInput" label="Risk" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small riskFilterInput" value="{!filterRecord.Risk__c}" onkeyup="projectSearch(this);" style="max-width:50%;" />                            
+                                    <apex:outputLabel >Region:</apex:outputLabel>
+                                    <apex:inputField id="regionFilterInput" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small regionFilterInput" value="{!filterRecord.Region__c}" onkeyup="projectSearch(this);" style="max-width:50%;" />
+                                </div> 
+                            </div>
+                        </div>
+                         <div class="slds-float_right">
+
+						 <apex:commandButton styleClass="slds-button slds-button_brand" value="Save Filter"  onclick="showmodal(this.value); return false;"  rerender="modalSection"/>
+                         <apex:commandButton styleClass="slds-button slds-button_destructive" value="Delete"  onclick="deleteFilter();return false;" disabled="{!(defaultValue =='--none--' || defaultValue=='')}" />
+                            </div>
+                    </div>
+                </apex:outputPanel>
+                <apex:outputPanel id="projectTable">
+                    <apex:outputPanel rendered="{!tempListOfProject.size > 0}">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="">
+                                            <label class="slds-checkbox">
+                                                <input type="checkbox" id="projectHeaderCheckbox" class="CheckBoxClass" onclick="selectAllProject(this.checked);" />
+                                                
+                                                <span class="slds-checkbox--faux"></span>
+                                                <span class="slds-form-element__label slds-assistive-text">select</span>
+                                            </label>
+                                        </div>
+                                    </th>
+                                    <th class="slds-is-sortable slds-text-title--caps"  id ="Name" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="PROJECT NAME">PROJECT NAME</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Name') }">&nbsp;  &#9660; </apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Name') }"> &nbsp;  &#9650; </apex:outputText>                   
+                                        </a>
+                                    </th>
+									  <th class="slds-is-sortable slds-text-title--caps"  id ="Queued_Status__c" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="STATUS">STATUS</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Queued_Status__c') }">&nbsp;  &#9660;</apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Queued_Status__c')}"> &nbsp;  &#9650; </apex:outputText>                        
+                                        </a>
+                                    </th>
+
+                                   <th class="slds-is-sortable slds-text-title--caps"  id ="Krow__Account__r.Name" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="BUYER ACCOUNT">BUYER ACCOUNT</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Krow__Account__r.Name') }">&nbsp;  &#9660; </apex:outputText>
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Krow__Account__r.Name')}"> &nbsp;  &#9650; </apex:outputText>                        
+                                        </a>
+                                    </th>
+
+                                   <th class="slds-is-sortable slds-text-title--caps"  id ="Priority__c" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="PRIORITY">PRIORITY</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Priority__c') }">&nbsp;  &#9660; </apex:outputText>
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Priority__c')}"> &nbsp;  &#9650; </apex:outputText>                       
+                                        </a>
+                                    </th>
+                                    <th class="slds-is-sortable slds-text-title--caps"  id ="Risk__c" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="RISK">RISK</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Risk__c') }">&nbsp;  &#9660; </apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Risk__c')}"> &nbsp;  &#9650;</apex:outputText>                       
+                                        </a>
+                                    </th>
+                                    <th class="slds-is-sortable slds-text-title--caps"  id ="country__c" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="COUNTRY">COUNTRY</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'country__c') }">&nbsp;  &#9660; </apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'country__c')}"> &nbsp;  &#9650; </apex:outputText>                        
+                                        </a>
+                                    </th>
+                                        
+                                    <th class="slds-is-sortable slds-text-title--caps "  id ="Krow__Project_Start_Date__c" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="START DATE">START DATE</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Krow__Project_Start_Date__c')}" >&nbsp;  &#9660; </apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Krow__Account__r.Name')}"  > &nbsp;  &#9650; </apex:outputText>                       
+                                        </a>
+                                    </th>
+                                      
+                                    <th class="slds-is-sortable slds-text-title--caps Name"  id ="Krow__Project_End_Date__c" scope="col" onclick="sortList(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="END DATE">END DATE</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Krow__Project_End_Date__c') }">&nbsp;  &#9660; </apex:outputText>
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Krow__Project_End_Date__c')}"> &nbsp;  &#9650; </apex:outputText>                       
+                                        </a>
+                                    </th>
+                                       
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <apex:repeat value="{!tempListOfProject}" var="project">
+                                    <tr class="slds-hint-parent">
+                                        <td data-label="Opportunity Name" scope="row">
+                                            <label class="slds-checkbox">
+                                                <apex:inputCheckbox styleClass="CheckBoxClass projectCheckbox" value="{!project.isSelect}" onclick="checkHeaderCheckbox();" >
+                                                    
+                                                </apex:inputCheckbox>
+                                                <span class="slds-checkbox--faux"></span>
+                                                <span class="slds-form-element__label slds-assistive-text">select</span>
+                                            </label>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">
+                                                <apex:outputLink value="/{!project.projectId}" target="_blank">{!project.projectName}</apex:outputLink>
+                                            </div>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">{!project.status}</div>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">{!project.buyerAccount}</div>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">{!project.priority}</div>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">{!project.risk}</div>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">{!project.country}</div>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">{!project.startDate}</div>
+                                        </td>
+                                        <td data-label="">
+                                            <div class="slds-truncate">{!project.endDate}</div>
+                                        </td>
+                                    </tr>
+                                </apex:repeat>
+                            </tbody>
+                            <script>
+                            checkHeaderCheckbox();
+                            </script>
+                        </table>
+                        
+                        
+                        <apex:outputPanel id="paginationPanelProject">
+                            <div style="text-align:center;">
+                                <div class="slds-badge slds-badge_lightest slds-button_outline-brand" style="margin-top:2%; float:left;">
+                                    Page {!(pageNumberProject + 1)} out of {!(totalNoOfPageProject +1)}
+                                </div>
+                                <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="First" action="{!first}"  reRender="projectTable,paginationPanelProject" style="margin-top:2%;" disabled="{!FirstButtonDisabled}">
+                                    <apex:param name="firstProject" value="Project" assignTo="{!wrapperType}"/>
+                                </apex:commandButton>
+                                <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="Pre" action="{!previous}"  reRender="projectTable,paginationPanelProject" style="margin-top:2%;" disabled="{!FirstButtonDisabled}">
+                                    <apex:param name="preProject" value="Project" assignTo="{!wrapperType}"/>
+                                </apex:commandButton>
+                                <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="Next" action="{!next}"  reRender="projectTable,paginationPanelProject" style="margin-top:2%;" disabled="{!LastButtonDisabled}">
+                                    <apex:param name="nextProject" value="Project" assignTo="{!wrapperType}"/> 
+                                </apex:commandButton>
+                                <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="Last" action="{!last}" reRender="projectTable,paginationPanelProject" style="margin-top:2%;" disabled="{!LastButtonDisabled}">
+                                    <apex:param name="lastProject" value="Project" assignTo="{!wrapperType}"/>
+                                </apex:commandButton> 
+                                
+                                <apex:commandButton styleClass="slds-button slds-button_brand" value="Next" action="{!getAllResourcePlanner}" style="float:right;margin-top:2%;"  reRender="form" oncomplete="moveToResourceSection('{!selectedProjectId.size}');" status="status" disabled="{!tempListOfProject.size == 0}" />
+                            </div>
+                            
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    
+                    <apex:outputPanel rendered="{!tempListOfProject.size == 0}">
+                        <p>No project record found.</p>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </div>
+            <!-- Krow project table - END -->
+            
+            <!-- resoure section START -->
+            <div id="resourceSection" class="slds-hide" style="padding:1% 1%;">
+                <div id="krowProjectDiv" class="slds-show" style="padding:1% 1%;">
+                    <apex:outputPanel id="resourceData">
+                        <div class="slds-form-element slds-box">
+                            <apex:outputLabel styleClass="slds-text-heading_small slds-grid slds-m-bottom_small" >Existing Filter:</apex:outputLabel>
+                            <apex:selectList size="1"  styleClass="slds-select" value="{!defaultValue}" onchange="popoulateFilters(this.value);return false;"  style="margin-left:5px;width:150px" > 
+                                <apex:selectOptions value="{!options}" ></apex:selectOptions>
+                            </apex:selectList>
+                        </div>
+                        <div class="slds-form-element slds-m-top_small slds-m-bottom_small slds-box" >
+                            <apex:outputLabel styleClass="slds-text-heading_small slds-grid slds-m-bottom_small" >New Filter:</apex:outputLabel>
+                            <div style="padding-top:1%;">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col">
+                                        
+                                        <apex:outputLabel >Resource Name:</apex:outputLabel>
+                                        <apex:inputField id="filterResourceName" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small filterResourceName" value="{!filterRecordResource.Project_Name__c}"  onkeyup="searchRecords(this);" style="max-width:50%;" >
+                                        </apex:inputField>
+                                        
+                                    </div>
+                                    <div class="slds-col">
+                                        <apex:outputLabel >Role:</apex:outputLabel>
+                                        <apex:inputField id="roleFilterResource" StyleClass="slds-input slds-grid slds-wrap slds-m-bottom_small roleFilterResource" value="{!filterRecordResource.Status__c}" onkeyup="searchRecords(this);"  style="max-width:50%;" >
+                                        </apex:inputField>
+                                        
+                                    </div>
+                                    <div class="slds-col">
+                                        <apex:outputLabel >Region:</apex:outputLabel>
+                                        <apex:inputField id="countryFilterInput" StyleClass="slds-input slds-grid slds-wrap countryFilterInput" value="{!filterRecordResource.Region__c}" onkeyup="searchRecords(this);"  style="max-width:50%;" >
+                                        </apex:inputField>
+                                        
+                                    </div>                                                   
+                                </div>
+                            </div>
+                             <div class="slds-float_right">
+							       <apex:commandButton styleClass="slds-button slds-button_brand " value="Save Filter"  onclick="showmodal(this.value); return false;"  rerender="modalSection"/>
+								   <apex:commandButton styleClass="slds-button slds-button_destructive" value="Delete"  onclick="deleteFilter();return false;" disabled="{!(defaultValue =='--none--')}" />
+                            
+                            </div>
+                        </div>
+                        
+                    </apex:outputPanel>
+                    <!-- resource table panel - START -->
+                    <apex:outputPanel id="resourceTable">
+                        
+                        <apex:outputPanel rendered="{!tempListOfResource.size != 0}"> 
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered" style="widht:100%">
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <th scope="col" style="width:10%" >
+                                            <div class="slds-truncate" title=""></div>
+                                        </th>
+                                       <th class="slds-is-sortable slds-text-title--caps"  id ="Name" scope="col" onclick="sortResource(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="Name">RESOURCE NAME</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Name') }">&nbsp;  &#9660; </apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Name')}"> &nbsp;  &#9650; </apex:outputText>                        
+                                        </a>
+                                    </th>
+                            <th class="slds-is-sortable slds-text-title--caps"  id ="Krow__Project_Role__r.Name" scope="col" onclick="sortResource(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="Role">RESOURCE ROLE</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Krow__Project_Role__r.Name') }">&nbsp;  &#9660; </apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Krow__Project_Role__r.Name')}"> &nbsp;  &#9650; </apex:outputText>                        
+                                        </a>
+                                    </th>
+                                       <th class="slds-is-sortable slds-text-title--caps"  id ="Krow__Region__r.Name" scope="col" onclick="sortResource(this); return false;">
+                                        <a href="javascript:void(0);" class="slds-th__action slds-text-link--reset">
+                                            <span class="slds-assistive-text">Sort</span>
+                                            <span class="slds-truncate" title="REGION">RESOURCE REGION</span>
+                                            <apex:outputText rendered="{! AND(arrowDirection == 'arrowdown',sortField == 'Krow__Region__r.Name') }">&nbsp;  &#9660; </apex:outputText> 
+                                            <apex:outputText rendered="{! AND(arrowDirection != 'arrowdown',sortField == 'Krow__Region__r.Name')}"> &nbsp;  &#9650; </apex:outputText>                        
+                                        </a>
+                                    </th>
+                                           
+                                        <th scope="col" style="width:10%">
+                                            <div class="slds-truncate" title="Totle Project">NO OF PROJECT ASSIGNED</div>
+                                        </th>
+                                        <th scope="col" style="width:30%">
+                                            <div class="slds-truncate" title="Action">ACTION</div>
+                                        </th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody style="width:100%">
+                                    <apex:repeat value="{!tempListOfResource}" var="wrp">
+                                        <tr class="slds-hint-parent">
+                                            <td scope="row" style="max-width:10%">
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-radio">
+                                                        <input type="radio" name="option" id="{!wrp.recordId}" value="{!wrp.isSelect}" onclick="setResource('{!wrp.recordId}');"/>
+                                                        <label class="slds-radio__label" for="{!wrp.recordId}">
+                                                            <span class="slds-radio_faux"><span class="dot"></span></span>
+                                                            <span class="slds-form-element__label slds-assistive-text">select</span>
+                                                        </label>
+                                                    </span>
+                                                </div>
+                                                <script>
+                                                if('{!wrp.isSelect}' == 'true') {
+                                                    document.getElementById('{!wrp.recordId}').checked = true;
+                                                }
+                                                </script>
+                                            </td>
+                                            <td style="width:20%">
+                                                <apex:outputLink style="max-width:200px; display:block;" styleClass="slds-truncate" value="/{!wrp.recordId}" target="_blank">{!wrp.Name}</apex:outputLink>
+                                            </td>
+                                            <td style="width:20%">
+                                                <div class="slds-truncate">{!wrp.role}</div>
+                                            </td>
+                                            <td style="width:10%">
+                                                <div class="slds-truncate">{!wrp.region}</div>
+                                            </td>   
+                                            <td style="width:10%">
+                                                <div class="slds-truncate">{!wrp.totalProject }</div>
+                                            </td>
+                                            <td style="width:30%">
+                                                <div>
+                                                    <button class="slds-button slds-button_brand" id="{!wrp.recordId}projectButton" style="background-color: #605eef;" onClick="showProjects('{!wrp.recordId}projectTable','{!wrp.recordId}templateTable'); return false;">Project Detail</button>
+                                                    <button class="slds-button slds-button_brand" id="{!wrp.recordId}workflowButton" style="background-color: #605eef;"  onClick="showUsedTemplate('{!wrp.recordId}templateTable','{!wrp.recordId}projectTable'); return false;">Workflow Detail</button>
+                                                </div>
+                                                
+                                                <script>console.log('{!wrp.totalProject}');
+                                                if('{!wrp.totalProject}' == 0){
+                                                    console.log("ss");
+                                                    document.getElementById('{!wrp.recordId}'+"projectButton").style.backgroundColor  = "#b4aeae";
+                                                    document.getElementById('{!wrp.recordId}'+"projectButton").disabled="true";
+                                                    
+                                                    document.getElementById('{!wrp.recordId}'+"workflowButton").style.backgroundColor  = "#b4aeae";
+                                                    document.getElementById('{!wrp.recordId}'+"workflowButton").disabled="true";
+                                                }
+                                                
+                                                </script>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr id="{!wrp.recordId}projectTable" style="display:none;">
+                                            
+                                            <td colspan="7" >
+                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="{!wrp.recordId}innerProjectTable">
+                                                    <thead class="class2">
+                                                        <tr class="slds-line-height_reset">
+                                                            <th class="" scope="col">
+                                                                <div class="slds-truncate" title="Name">PROJECT NAME</div>
+                                                            </th>
+                                                            <th class="" scope="col" id="{!wrp.recordId}HeaderStatus">
+                                                                <div class="slds-truncate" title="Status">STATUS</div>
+                                                            </th>
+                                                            <th class="" scope="col" id="{!wrp.recordId}HeaderStatus">
+                                                                <div class="slds-truncate" title="Template">WORKFLOW</div>
+                                                            </th>
+                                                        </tr>
+                                                    </thead >
+                                                    <tbody class="tbodyClass" >
+                                                        <apex:repeat value="{!wrp.Projects}" var="project">
+                                                            <tr class="slds-hint-parent class2" >
+                                                                <td data-label="">
+                                                                    <div class="slds-truncate">
+                                                                        <apex:outputLink value="/{!project.projectId}" target="_blank">{!project.projectName}</apex:outputLink>
+                                                                    </div> 
+                                                                </td>
+                                                                <td data-label="">
+                                                                    <div class="slds-truncate">{!project.status}</div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="slds-truncate">{!project.templateName}</div>
+                                                                </td>
+                                                            </tr>
+                                                        </apex:repeat>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Add 13/05/19-->
+                                        <tr id="{!wrp.recordId}templateTable" style="display:none;">
+                                            
+                                            <td colspan="7" >
+                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="{!wrp.recordId}innertemplateTable">
+                                                    <thead class="class2">
+                                                        <tr class="slds-line-height_reset">
+                                                            <th class="" scope="col">
+                                                                <div class="slds-truncate" title="Name">WORKFLOW NAME</div>
+                                                            </th>
+                                                            <th class="" scope="col" id="{!wrp.recordId}HeaderStatus">
+                                                                <div class="slds-truncate" title="Status">NO OF PROJECTS</div>
+                                                            </th>
+                                                        </tr>
+                                                    </thead >
+                                                    <tbody class="tbodyClass" >
+                                                        <apex:repeat value="{!wrp.workflowTemplateList}" var="template">
+                                                            <tr class="slds-hint-parent class2" >
+                                                                <td data-label="">
+                                                                    <div class="slds-truncate">
+                                                                        <apex:outputLink value="/{!template.templateId}" target="_blank">{!template.templateName}</apex:outputLink>
+                                                                    </div> 
+                                                                </td>
+                                                                <td data-label="">
+                                                                    <div class="slds-truncate">{!template.noOfProject}</div>
+                                                                </td>
+                                                            </tr>
+                                                        </apex:repeat>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                            
+                            <apex:outputPanel id="paginationPanelResource">
+                                <div style="text-align:center;">
+                                    <div class="slds-badge slds-badge_lightest slds-button_outline-brand" style="margin-top:2%; float:left;">
+                                        Page {!(pageNumber+1)} out of {!(totalNoOfPageResource +1)}
+                                    </div>
+                                    <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="First" action="{!first}"  reRender="resourceTable,paginationPanelResource" style="margin-top:2%;" disabled="{!FirstButtonDisabled}">
+                                        <apex:param name="firstResource" value="resource" assignTo="{!wrapperType}"/>
+                                    </apex:commandButton>
+                                    <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="Pre" action="{!previous}"  reRender="resourceTable,paginationPanelResource" style="margin-top:2%;" disabled="{!FirstButtonDisabled}">
+                                        <apex:param name="preResource" value="resource" assignTo="{!wrapperType}"/>
+                                    </apex:commandButton>
+                                    <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="Next" action="{!next}"  reRender="resourceTable,paginationPanelResource" style="margin-top:2%;" disabled="{!LastButtonDisabled}">
+                                        <apex:param name="nextResource" value="resource" assignTo="{!wrapperType}"/>
+                                    </apex:commandButton>
+                                    <apex:commandButton styleClass="slds-button slds-button_outline-brand" value="Last" action="{!last}" reRender="resourceTable,paginationPanelResource" style="margin-top:2%;" disabled="{!LastButtonDisabled}">
+                                        <apex:param name="lastResource" value="resource" assignTo="{!wrapperType}"/>
+                                    </apex:commandButton>
+                                    
+                                    <div style="float:right;margin-top:2%;">
+                                        <input type="button" class="slds-button slds-button_brand" value="Back" onclick="backToProjectSection();"/>
+                                        <apex:commandButton id="nextButtonOnResource" styleClass="slds-button slds-button_brand" value="Next" action="{!moveToProjectAssignment}" reRender="msg,pgMesPanel,backToHomePanel" oncomplete="moveToProjectAssignemntPage('{!isAlertShown}');" status="status" >
+                                        </apex:commandButton>
+                                    </div>
+                                </div>
+                            </apex:outputPanel>
+                            
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!tempListOfResource.size == 0}">
+                            <p>No project resource record found.</p>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!-- resource table panel - END -->
+                </div>
+            </div>
+            <!-- resoure section END -->
+            
+            <!-- project assignement section - START -->
+            <apex:outputPanel id="backToHomePanel">
+                
+                <div id="projectAssignmentDiv"  class="slds-hide" style="padding:1% 1%;">
+                    <div class="slds-form-element" style="max-width:30%;padding-top:1%;">
+                        <label class="slds-form-element__label">Select Role</label>
+                        <div class="slds-form-element__control">
+                            <div class="slds-select_container">
+                                <apex:selectList styleclass="slds-select" value="{!projectAssignment.roleId}" size="1" label="Select Role">
+                                    <apex:selectOptions value="{!roles}"></apex:selectOptions>
+                                </apex:selectList>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class=" test slds-form-element" style="max-width:10%;padding-top:1%;">
+                        <label class="slds-form-element__label">Start Date</label>
+                        <div class="slds-form-element__control">
+                            <div class="slds-select_container">
+                                <apex:input type="date" styleClass="slds-input" value="{!projectAssignment.startDate}" /> 
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="test slds-form-element" style="max-width:10%; padding-top:1%;">
+                        <label class="slds-form-element__label">End Date</label>
+                        <div class="slds-form-element__control">
+                            <div class="slds-select_container">
+                                <apex:input type="date" styleClass="slds-input" value="{!projectAssignment.endDate}"/>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form-element" style="max-width:30%; padding-top:1%;">
+                        <div class="slds-form-element__control">
+                            <label class="slds-checkbox">
+                                <apex:inputCheckbox styleClass="CheckBoxClass" value="{!projectAssignment.isOwner}" >
+                                    
+                                </apex:inputCheckbox>
+                                <span class="slds-checkbox--faux"></span>
+                                <span class="slds-form-element__label">Owner</span>
+                            </label>
+                        </div>
+                    </div> 
+                    
+                    <div style="text-align:center;">
+                        <apex:commandButton styleClass="slds-button slds-button_brand" value="Assign Resource" action="{!assignProject}"  reRender="msg,pgMesPanel" style="margin-top:2%;" status="status" oncomplete="assignProjectSuccess('{!isAlertShown}');"/>
+                        <input type="button" class="slds-button slds-button_brand" value="Back" onclick="backToResourceSection();"  style="margin-top:2%;"/>
+                    </div>
+                </div>
+            </apex:outputPanel>
+            <!-- project assignement section - END -->
+            
+            <div id="backToHomePageDiv" class="slds-hide" style="padding:1% 1%;">
+                <div style="text-align:center;">
+                    <apex:commandButton styleClass="slds-button slds-button_brand" value="Back To Home" action="{!backToHome}"  reRender="projectTable,projectData,msg,pgMesPanel,backToHomePanel" style="margin-top:2%;" status="status" oncomplete="backToHome();"/>
+                </div>
+            </div>
+            
+        </apex:pageBlock>
+        
+        <apex:outputPanel id="pgMesPanel">
+            <script>
+            overridePageMessages();
+            </script>
+        </apex:outputPanel>
+        <!-- acction staus for loading icon -->
+        <apex:actionStatus id="status">
+            <apex:facet name="start">
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.25; z-index: 1000; background-color: black;">
+                    &nbsp;
+                </div>
+                <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 15% 50%">
+                    <div style="display: inline-block; padding: 2px; background-color: #fff; width: 125px;">
+                        <img src="/img/loading.gif" style="float: left; margin: 8px;" />
+                        <span style="display: inline-block; padding: 10px 0px;">Please Wait...</span>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionStatus>
+        <div class="backdrop"></div>
+    </apex:form>
+</apex:page>

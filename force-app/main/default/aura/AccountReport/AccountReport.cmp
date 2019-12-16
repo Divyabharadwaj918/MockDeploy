@@ -1,0 +1,110 @@
+<aura:component implements="force:appHostable"  controller="AccountReportController">
+	
+	<!-- Attributes -->
+	<aura:attribute name="accounts" type="AccountReportWrapper[]" />  
+	<aura:attribute name="filteredAccounts" type="AccountReportWrapper[]" />  
+	<aura:attribute name="countries" type="String[]"/>
+	<aura:attribute name="filteredCountries" type="String[]"/>
+	<aura:attribute name="countryMap" type="Map"/>
+	<aura:attribute name="searchText" type="String"/>
+	<aura:attribute name="searchTextCountry" type="String"/>
+	
+	<!-- Handlers -->
+	<aura:handler name="init" action="{!c.doInit}" value="{!this}"/> 
+	
+	<!-- Markup -->
+	
+	<table class="slds-table slds-table_bordered slds-table_cell-buffer">
+		<tr class="slds-m-top_medium">
+				<th style="width:27em;">					
+					<ui:inputText aura:id="searchText" class="slds-input" placeholder="Enter Account Name to filter..." value="{!v.searchText}" keyup="{!c.filterAccounts}" updateOn="keyup"/>
+					
+				</th>
+				<th style="width:27em;">
+					<ui:inputText aura:id="countrysearchText" class="slds-input" placeholder="Enter Country/ISO Code to filter..." value="{!v.searchTextCountry}" keyup="{!c.filterCountries}" updateOn="keyup"/>
+				</th>
+				<th colspan="{!v.filteredCountries.length-1}" style="border-left:0px">
+					<span class="slds-badge slds-p-left_medium slds-p-right_medium slds-m-right_medium live">
+						<b>LIVE COUNTRIES</b>
+					</span>
+					<span class="slds-badge slds-p-left_medium slds-p-right_medium slds-m-right_medium implementation">
+						<b>IMPLEMENTATION COUNTRIES</b>
+					</span>
+					<span class="slds-badge slds-p-left_medium slds-p-right_medium slds-m-right_medium roadmapped">
+						<b>ROADMAPPED COUNTRIES</b>
+					</span>
+					<span class="slds-badge slds-p-left_medium slds-p-right_medium slds-m-right_medium future">
+						<b>FUTURE INTEREST COUNTRIES</b>
+					</span>
+				</th>
+			</tr>	
+	</table>
+	
+	<aura:renderIf isTrue="{!v.filteredAccounts.length>0}" >
+		<div style="overflow-x:scroll;margin-left:27em;white-space: pre-wrap;white-space: -moz-pre-wrap;white-space: -pre-wrap;white-space: -o-pre-wrap;word-wrap: break-word;">
+		<table class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_col-bordered ">
+			<thead>
+				<!--  -->
+				<tr class="slds-text-title_caps">
+					<th class="fixedCol">
+						<!--  <ui:inputText />-->
+						<span style="z-index:-1;"><b>Account Name</b></span>
+						<!-- <span style="z-index:5000;"><c:Popover /></span>-->
+						<!-- -->
+					</th>
+					<aura:iteration items="{!v.filteredCountries}" var="country">
+						<th>
+							<!-- {!country}<br/> -->
+							<c:CountryIsoCode country="{!country}" noOfChars="3" countryMap="{!v.countryMap}"/>
+						</th>	
+					</aura:iteration>
+				</tr>			
+			</thead>
+			<aura:if isTrue="{!v.filteredCountries.length>0}">
+			<tbody> 			
+				<aura:iteration items="{!v.filteredAccounts}" var="accObj">					
+					<tr>
+						<td class="fixedCol">							
+							<span title="{!accObj.accountObj.Products_in_Use__c}">{!accObj.accountObj.Name}</span>												
+						</td>
+						<!--  <aura:iteration items="{!accObj.liveCountries}" var="countryFlag">-->
+						<aura:iteration items="{!accObj.countryStatusList}" var="countryFlag">
+							<aura:renderIf isTrue="{!countryFlag.display==true}">
+								<td>							
+									<aura:renderIf isTrue="{!countryFlag.isLive}" >
+										<div class="slds-box slds-box_xx-small live"/>
+									</aura:renderIf>
+									<aura:renderIf isTrue="{!countryFlag.isImplementation}" >
+										<div class="slds-box slds-box_xx-small implementation"/>
+									</aura:renderIf>
+									<aura:renderIf isTrue="{!countryFlag.isRoadmapped}" >
+										<div class="slds-box slds-box_xx-small roadmapped" />
+									</aura:renderIf>
+									<aura:renderIf isTrue="{!countryFlag.isFuture}" >
+										<div class="slds-box slds-box_xx-small future"/>
+									</aura:renderIf>
+									<aura:if isTrue="{!and((countryFlag.isLive==false &amp;&amp; countryFlag.isImplementation==false &amp;&amp; countryFlag.isRoadmapped==false &amp;&amp; countryFlag.isFuture==false), true)}" >
+										<div class="slds-box slds-box_xx-small empty"/>
+									</aura:if>
+								</td>
+								
+							</aura:renderIf>
+						</aura:iteration>
+					</tr>
+				</aura:iteration>			
+			</tbody>
+			</aura:if>
+		</table>
+		</div>
+		<aura:set attribute="else">
+			<div class="slds-m-left_medium">
+				<aura:if isTrue="{!v.searchText==null}">
+					<lightning:icon iconName="standard:generic_loading" />
+					<span class="slds-m-left_medium">Loading...</span>
+				</aura:if>
+			</div>
+		</aura:set>
+	</aura:renderIf>
+	
+	
+</aura:component>

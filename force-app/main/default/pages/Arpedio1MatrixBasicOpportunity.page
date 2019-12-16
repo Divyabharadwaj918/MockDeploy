@@ -1,0 +1,1 @@
+<apex:page docType="html-5.0" cache="false" standardController="Opportunity"><arpediomatrix:StakeHolderMapBlockLayout owner="{!Opportunity}" /></apex:page>

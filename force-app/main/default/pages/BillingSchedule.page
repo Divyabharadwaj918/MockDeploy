@@ -1,0 +1,61 @@
+<apex:page controller="BillingScheduleController" showHeader="false" sidebar="false" cache="false" contentType="text/xml">
+    <block>
+        <apex:outputText rendered="{!IF(sizeOfMapOfBillingSchedule > 0,true,false)}">
+            <table table-layout="fixed" width="100%" text-align="center"> 
+                <table-body >
+                    <table-row font-size="1.5em"  background-color="#C9DAF8" color="#000000">
+                        <table-cell margin="0pt" padding="5pt" padding-right="5pt">
+                            <block> Billing Schedule</block>
+                        </table-cell>
+                    </table-row>
+                </table-body>
+            </table>
+            <table table-layout="fixed" width="100%" border-color="solid-black" border-width="1px" border-style="solid" margin-bottom="10px"
+                text-align="center">
+                <table-body>
+                    <table-row font-size="0.8em" font-weight="bold" background-color="#A9A9A9" color="#FFFFFF">
+                        <table-cell border="1px solid black" padding-top="8pt" padding-bottom="8pt" font-weight="bold" width="40px">
+                            <block>Year</block>
+                        </table-cell>
+                        <table-cell border="1px solid black" padding-top="8pt" padding-bottom="8pt" font-weight="bold" min-width="60px" max-width="90px">
+                            <block>Period Date Range</block>
+                        </table-cell>
+                        <table-cell border="1px solid black" padding-top="8pt" padding-bottom="8pt" font-weight="bold" max-width="50px">
+                            <block>Invoice Date</block>
+                        </table-cell>
+                        <table-cell border="1px solid black" padding-top="8pt" padding-bottom="8pt" font-weight="bold">
+                            <block>Due Date</block>
+                        </table-cell>
+                    </table-row>
+                    <apex:repeat value="{!mapOfBillingSchedule}" var="mapyear">
+                        <apex:repeat value="{!mapOfBillingSchedule[mapyear]}" var="mapWithSchedule">
+                            <table-row font-size="0.8em">
+                                <table-cell border="1px solid black" margin="0pt" padding-top="8pt" padding-bottom="8pt">
+                                    <block>
+                                        {!mapWithSchedule.yearNum}
+                                    </block>
+                                </table-cell>
+                                <table-cell border="1px solid black" padding-top="8pt" padding-bottom="8pt">
+                                    <block>
+                                        {!mapWithSchedule.invoiceStartDate} - {!mapWithSchedule.invoiceEndDate}
+                                        
+                                    </block>
+                                </table-cell>
+                                <table-cell border="1px solid black" padding-top="8pt" padding-bottom="8pt">
+                                    <block>
+                                        {!mapWithSchedule.invoiceStartDate}
+                                    </block>
+                                </table-cell>
+                                <table-cell border="1px solid black" padding-top="8pt" padding-bottom="8pt">
+                                    <block>
+                                            {!mapWithSchedule.invoiceStartDate} + {!mapWithSchedule.netTermInDays}
+                                    </block>
+                                </table-cell>
+                            </table-row>
+                        </apex:repeat>
+                    </apex:repeat>
+                </table-body>
+            </table>
+        </apex:outputText>
+    </block>
+</apex:page>

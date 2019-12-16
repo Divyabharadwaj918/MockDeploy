@@ -1,0 +1,119 @@
+<apex:page standardController="Sales_Service_Request__c" extensions="SalesServiceRequestApprovalController" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+<apex:form >	
+	
+	<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+	
+		<head>
+			<meta charset="utf-8" />
+			<meta http-equiv="x-ua-compatible" content="ie=edge" />
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+			<title></title>
+			<meta name="viewport" content="width=device-width, initial-scale=1" />			
+			<!-- Import the Design System style sheet -->
+			<apex:slds />
+		</head>
+		
+		<body>
+			<div class="slds-scope" >
+				<!-- ERROR ALERT DIV @start-->
+			    <apex:outputPanel layout="block" id="msg_block" style="display: none;">
+			        <div id="err_wrapper" class="slds-notify slds-notify--alert slds-theme--{!alertType} slds-theme--alert-texture"
+			             role="alert">
+			            <h2>
+			                <div xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+			                    <svg aria-hidden="true" class="slds-icon icon-text-email slds-icon--small slds-m-right--x-small">
+			                        <use xlink:href="{!URLFOR($Asset.SLDS, '/assets/icons/utility-sprite/svg/symbols.svg#' + if(alertType = 'success','check','ban'))}"></use>
+			                    </svg>
+			                    <span id="err_text"></span>
+			                </div>
+			            </h2>
+			        </div>
+			    </apex:outputPanel>
+			    <!-- ERROR ALERT DIV @end-->
+			    
+			     <!--APEX VARIABLES DIV @start-->
+		        <apex:outputPanel id="post_processing">
+		            <script>
+		                var hasMessages = {!hasMessages};
+		                var errorMessage = "{!errorMessage}";
+						checkMessages();
+						
+						function checkMessages() {
+						    if (hasMessages) {
+						        $('#err_text').html(errorMessage);
+						        $('[id$=msg_block]').show();
+						    } else {
+						        $('[id$=msg_block]').hide();
+						    }
+						
+						}
+					</script>
+				</apex:outputPanel>
+				<!--APEX VARIABLES DIV @end-->
+				<apex:outputPanel rendered="{!currentUserWorkItemId!='' && currentUserWorkItemId!=null}">
+					<div class="slds-size--2-of-5" >
+						<div class="slds-box slds-box--x-small slds-text-align--left slds-m-around--x-small" style="border:0px;">
+							
+							<apex:outputPanel rendered="{!projectExists==false}">
+					  			<div class="slds-form-element__control">
+					  				<label class="slds-form-element__label slds-m-vertical--medium" for="text-input-01">Select Template</label>
+					  				<div class="slds-select_container">
+						    			<apex:selectList value="{!selectedTemplate}" multiselect="false" size="1" styleClass="slds-select">
+						    				<apex:selectOptions value="{!templateOptions}"/>
+						    			</apex:selectList>
+					    			</div>
+					  			</div>
+				  			</apex:outputPanel>
+				  			
+				  			<div class="slds-form-element slds-m-vertical--medium">
+								<label class="slds-form-element__label" for="text-input-01">Comments</label>
+						  		<div class="slds-form-element__control">
+						    		<apex:inputTextArea value="{!comments}" styleclass="slds-input"/>
+						  		</div>
+							</div>
+							
+							<!--  <div class="slds-form-element slds-m-vertical--medium">
+								<label class="slds-form-element__label" for="text-input-01">Upload Attachment</label>
+						  		<div class="slds-form-element__control">
+						  			<div class="slds-file-selector slds-file-selector--files">
+										<apex:inputFile value="{!approvalAttachment.body}" filename="{!approvalAttachment.name}" styleClass="slds-file-selector__button slds-button slds-button--neutral"/>
+									</div>
+								</div>
+							</div>-->
+							
+							
+							<div class="slds-form-element slds-m-vertical--medium ">
+							
+							<apex:actionStatus id="approveStatusId" >
+								<apex:facet name="stop">
+									<apex:outputPanel >	
+										<apex:commandButton value="Approve" action="{!approveRequest}" status="approveStatusId" rerender="post_processing,msg_block" styleclass="slds-button slds-button--neutral slds-not-selected slds-m-horizontal--small"/>
+										<apex:commandButton value="Reject" action="{!rejectRequest}" rerender="post_processing,msg_block" styleclass="slds-button slds-button--neutral slds-not-selected slds-m-horizontal--small"/>
+										<apex:commandButton value="Cancel" action="{!cancelApproval}" styleclass="slds-button slds-button--neutral slds-not-selected slds-m-horizontal--small"/>
+									</apex:outputPanel>
+									</apex:facet>
+									<apex:facet name="start">	
+										<apex:outputPanel >		
+											<div class="slds-spinner_container">
+												<div role="status" class="slds-spinner slds-spinner--medium">
+													<span class="slds-assistive-text">Loading</span>
+													<div class="slds-spinner__dot-a"></div>
+													<div class="slds-spinner__dot-b"></div>
+												</div>
+											</div>	
+										</apex:outputPanel>
+									</apex:facet>		
+								</apex:actionStatus>		
+							</div>							
+						</div>
+					</div>
+				</apex:outputPanel>
+				<apex:outputPanel rendered="{!currentUserWorkItemId=='' && currentUserWorkItemId==null}">
+					<br/>
+					<apex:commandButton value="Cancel" action="{!cancelApproval}" styleclass="slds-button slds-button--neutral slds-not-selected slds-m-horizontal--small"/>
+				</apex:outputPanel>
+			</div>
+		</body>
+	</html>
+</apex:form>
+</apex:page>

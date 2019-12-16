@@ -1,0 +1,15 @@
+<apex:page standardController="Opportunity">
+<p><strong>1. Qualify and opportunity – 0%</strong></p>
+<p><strong>Goals</strong></p>
+<li> We differentiate/change the game with business model and financial solutions</li>
+  <li>Understand customer pains and why move now<br />
+  </li>
+<p><strong>Sales Activity check list</strong></p>
+  <li>Confirm BD stage 1-4 is correct</li>
+  <li>Know and understand the customer pain and why they want to move now (field in Opportunity)</li>
+  <li>Show them their Tradeshift future/standard demo</li>
+  <li>Identify executive champion(s) (map under contract roles)</li>
+  <li>Identify competition inc.l do nothing (drop down)</li>
+  <li>Share success stories &amp; metrics<br />
+  </li>
+</apex:page>

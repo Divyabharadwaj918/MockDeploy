@@ -1,0 +1,40 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,lightning:actionOverride,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction,lightning:isUrlAddressable" controller="KrowProjectRecordTypeSelectorController" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" access="public"/>
+    <aura:attribute name="recordTypes" type="String[]" access="public"/>
+    <aura:attribute name="isOpen" type="boolean" default="false" /> 
+    <div class="slds">
+        <div class="demo-only" style="height: 640px;" id="newClientSectionId">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick = "{!c.closeModal}">
+                            <lightning:icon iconName="utility:clear" size="small" alternativeText="Indicates approval"/> 
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Krow Project</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around--medium">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size--1-of-2 slds-large-size--1-of-2">
+                                <div class="slds-align--absolute-center">Select a Record Type</div>   
+                            </div>
+                            <div class="slds-size--1-of-2 slds-large-size--1-of-2">
+                                <aura:iteration items="{!v.recordTypes}" var="rt">
+                                    <ol class="slds-list--vertical slds-list--vertical-space">
+                                        <input type="radio" value="{!rt.Name}" name="recordTypeRadio" id="{!rt.Id}" style="margin-right: 5px;" />{!rt.Name}
+                                    &nbsp; &nbsp;
+                                    </ol> 
+                                </aura:iteration>
+                            </div>
+                        </div>
+                    </div>
+					<footer class="slds-modal__footer">
+                       <button class="slds-button slds-button_brand" onclick="{!c.createRecordFun}">Next</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </div>
+    
+</aura:component>

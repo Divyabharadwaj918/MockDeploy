@@ -1,0 +1,49 @@
+<apex:page standardController="Contract" extensions="ContractAttachmentValidatorController" standardStylesheets="false" sidebar="false" showHeader="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0" action="{!udpateContract}">
+    <apex:form >
+        <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+            <head>
+                <meta charset="utf-8" />
+                <meta http-equiv="x-ua-compatible" content="ie=edge" />
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+                <title></title>
+                <meta name="viewport" content="width=device-width, initial-scale=1" />			
+                <!-- Import the Design System style sheet -->
+                <apex:slds />
+            </head>
+            <body>
+				<div class="slds-scope" >  
+                    <div class="slds-grid">
+  						<div class="slds-col">  
+                            	<apex:outputPanel id="attachmentPanel">
+                                    <apex:outputText value="{!attachmentMessage}" escape="false"/>
+                                    <table class="slds-table">
+                                    	<apex:repeat value="{!doclist}" var="docObj">
+                                        	<tr>
+                                            	<td width="20%">
+                                            		<apex:outputPanel rendered="{!docObj.URL!=''&& docObj.URL!=null}">
+                                            			<a href="{!docObj.URL}" target="_blank"><b>{!docObj.Name}</b></a>
+													</apex:outputPanel>
+                                                    <apex:outputPanel rendered="{!docObj.URL==''&& docObj.URL==null}">
+                                                        <span style="font-weight:bold;color:RED;">{!docObj.Name}</span>
+													</apex:outputPanel>
+                                            	</td>
+                                        		<td width="60%">
+													<apex:inputField styleClass="slds-input" value="{!docObj.URL}" required="true"/>
+                                            	</td>
+                                            </tr>
+										</apex:repeat>
+                                        <tr>
+                                        	<td colspan="2">
+                                                <apex:commandButton value="Save Docs" action="{!saveDocs}" styleClass="slds-button slds-button_brand" oncomplete="window.top.location = '/lightning/r/Contract/{!contractId}/view';" rendered="{!$User.UITheme=='Theme4d'}"/>
+                                                <apex:commandButton value="Save Docs" action="{!saveDocs}" styleClass="slds-button slds-button_brand" oncomplete="window.top.location = '/{!contractId}';" rendered="{!$User.UITheme!='Theme4d'}"/>
+											</td>
+										</tr>
+									</table>
+								</apex:outputPanel>
+                        </div>
+					</div>
+                </div>
+			</body>
+        </html>
+    </apex:form>
+</apex:page>

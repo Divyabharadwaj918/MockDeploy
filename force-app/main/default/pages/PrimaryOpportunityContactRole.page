@@ -1,0 +1,2 @@
+<apex:page standardController="Opportunity" extensions="PrimaryOpportunityContactRoleController" action="{!populatePrimaryContact}">
+</apex:page>

@@ -1,0 +1,162 @@
+<aura:component controller ="CustomBulkLeadConversionController" implements="force:appHostable,flexipage:availableForRecordHome,force:lightningQuickActionwithoutHeader,force:hasRecordId,lightning:isUrlAddressable" access="global" >
+    <aura:attribute name ="WrapperData" type = 'Object' default =""/>
+    <aura:attribute name="Spinner" type ="Boolean" default = "false" />
+    <aura:html tag="style">
+        .cuf-content {
+        	padding: 0 0rem !important;
+        }
+            .slds-p-around–medium {
+            padding: 0rem !important;
+        }
+        .slds-modal__content{
+            height:unset !important;
+            width:unset !important;
+            max-height:unset !important;
+        }
+        @media
+            .modal-container{
+             width:55% !important;
+            max-width:unset !important;
+        }
+        
+        .modal-container.slds-modal__container{
+        	max-width:50%;
+        }
+
+    </aura:html>
+        <div class="modal-header slds-modal__header"> 
+        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Convert Lead</h2>
+    </div>
+    
+    <aura:if isTrue="{!v.Spinner }">
+        
+            <div class="slds-modal__content slds-p-around_large">
+                <aura:if isTrue ="{!not(empty(v.WrapperData))}" >
+                    <div class="slds-grid slds-gutters">
+                        <div class = "slds-col slds-size_6-of-12">
+                            <div class="slds-text-heading_medium">Account</div>
+                            <div class= "slds-box">
+                                <lightning:tile label="{!v.WrapperData.acc.Name}" href="{!'/lightning/r/'+v.WrapperData.acc.Id+ '/view'}" >
+                                    <aura:set attribute="media">
+                                        <lightning:icon iconName="standard:account"/>
+                                    </aura:set>
+                                    <dl class="slds-dl_horizontal slds-wrap">
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="type">Type:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="">{!v.WrapperData.acc.Type}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Phone">Phone:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="{!v.WrapperData.acc.Phone}">{!v.WrapperData.acc.Phone}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Website">Website:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="{!v.WrapperData.acc.Website}">{!v.WrapperData.acc.Website}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label" style="width:47%;">
+                                            <p class="slds-truncate" title="Account Executive">Account Executive:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta" style="width:45%;">
+                                            <p class="slds-truncate" title="{!v.WrapperData.acc.Website}">{!v.WrapperData.acc.Owner.Name}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Client Executive">Client Executive:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="{!v.WrapperData.acc.Website}">{!v.WrapperData.acc.Client_Executive__r.Name}</p>
+                                        </dd>
+                                    </dl>
+                                </lightning:tile>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_6-of-12">
+                            <div class="slds-text-heading_medium">Contact</div>
+                            <div class= "slds-box">
+                                <lightning:tile label="{! v.WrapperData.con.FirstName+' '+v.WrapperData.con.LastName}" href="{!'/lightning/r/'+v.WrapperData.con.Id+ '/view'}" >
+                                    <aura:set attribute="media">
+                                        <lightning:icon iconName="standard:contact"/>
+                                    </aura:set>
+                                    <dl class="slds-dl_horizontal">
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Title">Title:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail ">
+                                            <p class="slds-truncate" title="{!v.WrapperData.con.Title}">{!v.WrapperData.con.Title}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Account Name">Account Name:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail ">
+                                            <p class="slds-truncate" title="{!v.WrapperData.con.Account.Name}">{!v.WrapperData.con.Account.Name}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Phone">Phone:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="{!v.WrapperData.con.Phone}">{!v.WrapperData.con.Phone}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Email">Email:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="{!v.WrapperData.con.Email}">{!v.WrapperData.con.Email}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="MobilePhone">MobilePhone:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="{!v.WrapperData.con.MobilePhone}">{!v.WrapperData.con.MobilePhone}</p>
+                                        </dd>
+                                    </dl>
+                                </lightning:tile>
+                            </div>
+                    </div>
+                    </div>
+                           <div class="slds-grid slds-gutters slds-p-top_large">
+                        <div class="slds-col slds-size_12-of-12">
+                            
+                            <div class="slds-text-heading_medium">Opportunity</div>
+                            <div class= "slds-box slds-grid slds-wrap">
+                                <aura:iteration items="{!v.WrapperData.oppList}"  var="opp" indexVar = "index">
+									  <div class= "{!'slds-grow slds-wrap slds-p-right_x-small slds-p-top_small'+' '+(v.WrapperData.oppList.length>=3?'slds-size_4-of-12':'slds-size_6-of-12')}">
+
+                                        {!(1+index)} : <a href="{!'/lightning/r/'+opp.Id+'/view'}">{!opp.Name}</a>
+                                        </div>
+                                </aura:iteration>
+                                  <aura:iteration items= "{!v.WrapperData.oppWrapper}" var ="wrap">
+                                	<lightning:tile label="Error" href="{!'/lightning/r/'+wrap.leadId+'/view'}"  class= "slds-box slds-size_4-of-12">
+                                      <p>{!wrap.error}</p>  
+                                      </lightning:tile>
+                                </aura:iteration>
+                            </div>
+                        </div>
+                    </div>
+                    <aura:set attribute="else">
+                            <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand slds-spinner_delayed">
+                                <span class="slds-assistive-text">Loading</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                    </aura:set>
+                    
+                </aura:if>
+        </div>
+
+        <aura:set attribute ="else">
+            
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <p>Are you sure you want to convert Leads?</p>
+            </div>
+            <div class="modal-footer slds-modal__footer ">
+                <lightning:button label="Cancel" title="Cancel" onclick="{! c.handleClick }"/>
+                <lightning:button label="Convert" variant="brand" title="Convert" onclick="{! c.leadConversion }"/>
+            </div>
+        </aura:set>
+    </aura:if>
+</aura:component>

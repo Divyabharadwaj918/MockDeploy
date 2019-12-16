@@ -1,0 +1,178 @@
+<!--
+ *    Description     :        Custom Lead conversion page.
+ *
+ *    Created By      :        
+ *
+ *    Created Date    :        20/08/2017
+ *
+ *    Revision Logs   :        V_1.0 - Created
+ *                      
+ **-->
+<apex:page standardController="lead" extensions="CustomLeadConversionController" standardStylesheets="false" lightningStylesheets="true" docType="html-5.0" >
+    <style>
+        .msgIcon{
+        display:none !important;
+        }
+        .messageCell{
+        text-align:center !important;
+        }
+    </style>
+    <script>
+    window.onload = function(){
+        //if(confirm('Are you sure you want to convert '+'{!lead.Name}'+' leads')){
+            convertLead();   
+            //}
+        /* else{	
+             backToLeadRecord();
+        }*/
+    }
+    </script>
+    <apex:slds />
+    
+    <apex:form >
+        <apex:pageMessages id="msg" ></apex:pageMessages>
+        
+        <apex:actionFunction name="convertLead" action="{!convertLead}" reRender="msg,pb" status="status" ></apex:actionFunction>
+        <!--<apex:actionFunction name="backToLeadRecord" action="{!backToLeadRecord}" reRender="msg,pb" status="status" ></apex:actionFunction>-->
+        
+        <apex:pageBlock id="pb" >
+            
+            <apex:outputPanel rendered="{! If(result == 'failure',true, false)}">
+                <apex:commandButton styleClass="slds-button slds-button_brand" action="{!backToLeadRecord}" value="Back" />
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{! If(result='success',true, false)}" >
+                <div style="padding-left: 7%;">
+                    <div style="display:inline-block;max-width:25%;">
+                        <div style="font-size: x-large;">Account</div>
+                        <article class="slds-card"  >
+                            <div class="slds-card__header slds-grid">
+                                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-icon_container slds-icon-standard-account" title="account">
+                                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" 
+                                                     xlink:href="/apexpages/slds/latest/assets/icons/standard-sprite/svg/symbols.svg#account">
+                                                </use>
+                                            </svg>
+                                            <span class="slds-assistive-text">account</span>
+                                        </span>
+                                    </div>
+                                    <div class="slds-media__body" style="text-align:left">
+                                        <h2 class="slds-card__header-title slds-truncate">
+                                            <apex:outputLink value="/{!accountInfo.Id}" >{!accountInfo.Name}</apex:outputLink>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-tile__detail" style="padding:1% 4%;">
+                                <dl class="slds-list_horizontal slds-wrap" style="padding:1% 4%;">
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="First Label">Type:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for first label">{!accountInfo.Type}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Phone:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!accountInfo.Phone}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Website:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!accountInfo.website}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Account Executive:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!accountInfo.Owner.Name}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Client Executive:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!accountInfo.Client_Executive__r.Name}</dd>
+                                </dl>
+                            </div>
+                        </article>
+                        
+                    </div>
+                    
+                    <div style="display:inline-block;max-width:25%;margin-left:5%">
+                        <div style="font-size: x-large;">Contact</div>
+                        <article class="slds-card" >
+                            <div class="slds-card__header slds-grid">
+                                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-icon_container slds-icon-standard-contact" title="Contact">
+                                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" 
+                                                     xlink:href="/apexpages/slds/latest/assets/icons/standard-sprite/svg/symbols.svg#contact">
+                                                </use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Contact</span>
+                                        </span>
+                                    </div>
+                                    <div class="slds-media__body" style="text-align:left;">
+                                        <h2 class="slds-card__header-title slds-truncate">
+                                            <apex:outputLink value="/{!contactInfo.Id}" >{!contactInfo.Name}</apex:outputLink>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-tile__detail" style="padding:1% 4%;">
+                                <dl class="slds-list_horizontal slds-wrap" style="padding:1% 4%;">
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="First Label">Title:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for first label">{!contactInfo.Title}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Account Name:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!contactInfo.Account.Name}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Phone:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!contactInfo.Phone}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Email:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!contactInfo.Email}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Mobile:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!contactInfo.MobilePhone}</dd>
+                                </dl>
+                            </div>
+                        </article>
+                    </div>
+                    <div style="margin-left:5%;display:inline-block;max-width:25%;">
+                        <div style="font-size: x-large;">Opportunity</div>
+                        <article class="slds-card" >
+                            <div class="slds-card__header slds-grid">
+                                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-icon_container slds-icon-standard-opportunity" title="Opportunity">
+                                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" 
+                                                     xlink:href="/apexpages/slds/latest/assets/icons/standard-sprite/svg/symbols.svg#opportunity">
+                                                </use>
+                                            </svg>
+                                            <span class="slds-assistive-text">Opportunity</span>
+                                        </span>
+                                    </div>
+                                    <div class="slds-media__body" style="text-align:left;">
+                                        <h2 class="slds-card__header-title slds-truncate">
+                                            <apex:outputLink value="/{!opportunityInfo.Id}" >{!opportunityInfo.Name}</apex:outputLink>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-tile__detail" style="padding:1% 4%;">
+                                <dl class="slds-list_horizontal slds-wrap" style="padding:1% 4%;">
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="First Label">Account Name:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for first label">{!opportunityInfo.Account.Name}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Stage:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!opportunityInfo.stageName}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Amount:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!opportunityInfo.amount}</dd>
+                                    <dt class="slds-item_label slds-text-color_weak slds-truncate" style="width:40%" title="Second Label">Opportunity Owner:</dt>
+                                    <dd class="slds-item_detail slds-truncate" style="width:60%" title="Description for second label">{!opportunityInfo.Owner.Name}</dd>
+                                </dl>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </apex:outputPanel>
+            
+            <apex:outputpanel >
+                <apex:actionstatus id="status">
+                    <apex:facet name="start">
+                        <div class="slds-spinner_container">
+                            <div class="slds-spinner slds-spinner--medium slds-spinner_brand">
+                                <span class="slds-assistive-text">Loading</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:outputpanel>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,30 @@
+.THIS .fixedCol{
+	position:absolute;
+	width:27em;
+	left:0;
+}
+.THIS .fixedColContainer{
+	overflow-x:scroll;
+	margin-left:27em;
+}
+.THIS .live{
+	background-color:#6c9b58;
+	color:white;
+}
+.THIS .implementation{
+	background-color:#e5b34a;
+	color:white;
+}
+.THIS .roadmapped{
+	background-color:#6912dd;
+	color:white;
+}
+.THIS .future{
+	background-color:#bb2477;
+	color:white;
+}
+.THIS .empty{
+	background-color:white;
+	color:white;
+	border: 0px;
+}

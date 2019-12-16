@@ -1,0 +1,4 @@
+<apex:page standardController="Opportunity">
+Please create an opportunity from a relevant Lead or Contact page. 
+Instructions can be found here https://docs.google.com/document/d/1575Vx2ZcquuiFkrFpuYekzMWlMh7MdMuiNg0P0xwsJc/edit
+</apex:page>

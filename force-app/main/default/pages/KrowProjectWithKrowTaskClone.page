@@ -1,0 +1,12 @@
+<!-- 
+    Description     :   VF page to Clone  Krow Project and its related tasks
+    
+    Created By      :   
+    
+    Created Date    :   01/31/2019
+    
+    Revision Logs   :   Created 
+-->
+<apex:page standardController="Krow__Project__c" extensions="KrowProjectWithKrowTaskCloneController"  showHeader="true" sidebar="true" standardStylesheets="true" action="{!clonekrowProject}" >
+<apex:messages />
+</apex:page>
